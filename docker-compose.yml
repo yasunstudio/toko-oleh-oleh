@@ -1,0 +1,19 @@
+# version: '3.8'
+services:
+  mysql:
+    image: mysql
+    container_name: toko-oleh-oleh-db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: Ya5un
+      MYSQL_DATABASE: toko_oleh_oleh
+      MYSQL_USER: yasun
+      MYSQL_PASSWORD: Ya5un
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./mysql-init:/docker-entrypoint-initdb.d
+
+volumes:
+  mysql_data:

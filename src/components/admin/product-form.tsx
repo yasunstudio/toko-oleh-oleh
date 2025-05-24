@@ -1,0 +1,402 @@
+'use client'
+
+import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+import { useForm, SubmitHandler } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { z } from 'zod'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Switch } from '@/components/ui/switch'
+import { useToast } from "@/hooks/use-toast"
+import { Upload, X } from 'lucide-react'
+import { Product, Category, ProductImage } from '@/types'
+import Image from 'next/image'
+import { createProductAction } from '@/app/actions'
+
+const productSchema = z.object({
+  name: z.string().min(1, 'Nama produk wajib diisi'),
+  description: z.string().optional(),
+  price: z.number().min(1, 'Harga harus lebih dari 0'),
+  stock: z.number().min(0, 'Stok tidak boleh negatif'),
+  categoryId: z.string().min(1, 'Kategori wajib dipilih'),
+  weight: z.number().optional(),
+  isActive: z.boolean()
+})
+
+type ProductFormData = z.infer<typeof productSchema>
+
+interface ProductFormProps {
+  product?: Product
+  isEdit?: boolean
+}
+
+export function ProductForm({ product, isEdit = false }: ProductFormProps) {
+  const { toast } = useToast()
+  const router = useRouter()
+  const [loading, setLoading] = useState(false)
+  const [categories, setCategories] = useState<Category[]>([])
+  const [images, setImages] = useState<string[]>(() => {
+    if (!product?.images) return [];
+    
+    // Handle different image formats
+    if (Array.isArray(product.images)) {
+      if (typeof product.images[0] === 'string') {
+        return product.images as string[];
+      } else {
+        // Convert ProductImage objects to string URLs
+        return product.images.map((img: any) => img.url);
+      }
+    }
+    
+    return [];
+  })
+  const [uploading, setUploading] = useState(false)
+
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    watch,
+    formState: { errors }
+  } = useForm<ProductFormData>({
+    resolver: zodResolver(productSchema),
+    defaultValues: {
+      name: product?.name || '',
+      description: product?.description || '',
+      price: product?.price || 0,
+      stock: product?.stock || 0,
+      categoryId: product?.category?.id || '',
+      weight: product?.weight || 0,
+      isActive: product?.isActive ?? true
+    }
+  })
+
+  // No debugging functions needed
+
+  useEffect(() => {
+    fetchCategories()
+  }, [])
+
+  const fetchCategories = async () => {
+    try {
+      const response = await fetch('/api/categories')
+      if (response.ok) {
+        const data = await response.json()
+        setCategories(data)
+      }
+    } catch (error) {
+      console.error('Error fetching categories:', error)
+    }
+  }
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files
+    if (!files) return
+
+    setUploading(true)
+    try {
+      const formData = new FormData()
+      Array.from(files).forEach(file => {
+        formData.append('images', file)
+      })
+
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        setImages(prev => [...prev, ...data.urls])
+        toast({
+          title: 'Berhasil',
+          description: 'Gambar berhasil diupload'
+        })
+      } else {
+        toast({
+          title: 'Gagal',
+          description: 'Gagal mengupload gambar',
+          variant: 'destructive'
+        })
+      }
+    } catch (error) {
+      console.error('Upload error:', error)
+      toast({
+        title: 'Error',
+        description: 'Terjadi kesalahan saat upload',
+        variant: 'destructive'
+      })
+    } finally {
+      setUploading(false)
+    }
+  }
+
+  const removeImage = (index: number) => {
+    setImages(prev => prev.filter((_, i) => i !== index))
+  }
+
+  const onSubmit: SubmitHandler<ProductFormData> = async (data) => {
+    if (images.length === 0) {
+      toast({
+        title: 'Gambar diperlukan',
+        description: 'Upload minimal satu gambar produk',
+        variant: 'destructive'
+      })
+      return
+    }
+
+    setLoading(true)
+    
+    try {
+      // For new products, use the server action
+      if (!isEdit) {
+        const result = await createProductAction({
+          ...data,
+          images
+        })
+        
+        if (result.success) {
+          toast({
+            title: 'Berhasil',
+            description: 'Produk berhasil dibuat'
+          })
+          router.push('/admin/products')
+          return
+        } else {
+          toast({
+            title: 'Gagal',
+            description: result.error || 'Gagal membuat produk',
+            variant: 'destructive'
+          })
+          return
+        }
+      }
+      
+      // For edit mode, use the API
+      const url = `/api/admin/products/${product?.id}`
+      const method = 'PUT'
+
+      const response = await fetch(url, {
+        method,
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          ...data,
+          images
+        }),
+        credentials: 'include' // Include cookies for authentication
+      })
+
+      if (response.ok) {
+        toast({
+          title: 'Berhasil',
+          description: 'Produk berhasil diperbarui'
+        })
+        router.push('/admin/products')
+      } else {
+        let errorData = { error: 'Unknown error' }
+        try {
+          errorData = await response.json()
+        } catch (e) {
+          console.error('Failed to parse error response:', e)
+        }
+        
+        toast({
+          title: 'Gagal',
+          description: errorData.error || 'Gagal memperbarui produk',
+          variant: 'destructive'
+        })
+      }
+    } catch (error) {
+      console.error('Submit error:', error)
+      toast({
+        title: 'Error',
+        description: 'Terjadi kesalahan',
+        variant: 'destructive'
+      })
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Product Info */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Informasi Produk</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <Label htmlFor="name">Nama Produk *</Label>
+              <Input
+                id="name"
+                {...register('name')}
+                placeholder="Masukkan nama produk"
+              />
+              {errors.name && (
+                <p className="text-red-500 text-sm mt-1">{errors.name.message}</p>
+              )}
+            </div>
+
+            <div>
+              <Label htmlFor="description">Deskripsi</Label>
+              <Textarea
+                id="description"
+                {...register('description')}
+                placeholder="Deskripsi produk"
+                rows={4}
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="price">Harga (Rp) *</Label>
+                <Input
+                  id="price"
+                  type="number"
+                  {...register('price', { valueAsNumber: true })}
+                  placeholder="0"
+                />
+                {errors.price && (
+                  <p className="text-red-500 text-sm mt-1">{errors.price.message}</p>
+                )}
+              </div>
+
+              <div>
+                <Label htmlFor="stock">Stok *</Label>
+                <Input
+                  id="stock"
+                  type="number"
+                  {...register('stock', { valueAsNumber: true })}
+                  placeholder="0"
+                />
+                {errors.stock && (
+                  <p className="text-red-500 text-sm mt-1">{errors.stock.message}</p>
+                )}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="categoryId">Kategori *</Label>
+                <Select 
+                  onValueChange={(value) => setValue('categoryId', value)}
+                  defaultValue={product?.category?.id}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Pilih kategori" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {categories.map((category) => (
+                      <SelectItem key={category.id} value={category.id}>
+                        {category.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {errors.categoryId && (
+                  <p className="text-red-500 text-sm mt-1">{errors.categoryId.message}</p>
+                )}
+              </div>
+
+              <div>
+                <Label htmlFor="weight">Berat (gram)</Label>
+                <Input
+                  id="weight"
+                  type="number"
+                  {...register('weight', { valueAsNumber: true })}
+                  placeholder="0"
+                />
+              </div>
+            </div>
+
+            <div className="flex items-center space-x-2">
+              <Switch
+                checked={watch('isActive')}
+                onCheckedChange={(checked) => setValue('isActive', checked)}
+              />
+              <Label>Produk Aktif</Label>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Product Images */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Gambar Produk</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <Label htmlFor="images">Upload Gambar</Label>
+              <Input
+                id="images"
+                type="file"
+                multiple
+                accept="image/*"
+                onChange={handleImageUpload}
+                disabled={uploading}
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                Format: JPG, PNG. Maksimal 5MB per file
+              </p>
+            </div>
+
+            {images.length > 0 && (
+              <div className="grid grid-cols-2 gap-4">
+                {images.map((image, index) => (
+                  <div key={index} className="relative aspect-square">
+                    <Image
+                      src={image}
+                      alt={`Product image ${index + 1}`}
+                      fill
+                      className="object-cover rounded border"
+                      sizes="(max-width: 768px) 100vw, 200px"
+                    />
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      size="sm"
+                      className="absolute top-2 right-2"
+                      onClick={() => removeImage(index)}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {uploading && (
+              <div className="text-center text-sm text-gray-600">
+                Mengupload gambar...
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Submit Buttons */}
+      <div className="flex gap-4">
+        <Button
+          type="button"
+          variant="outline"
+          onClick={() => router.back()}
+          disabled={loading}
+        >
+          Batal
+        </Button>
+        <Button type="submit" disabled={loading || uploading}>
+          {loading ? 'Menyimpan...' : isEdit ? 'Perbarui Produk' : 'Buat Produk'}
+        </Button>
+      </div>
+    </form>
+  )
+}
