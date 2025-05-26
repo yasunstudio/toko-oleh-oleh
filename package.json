@@ -20,6 +20,7 @@
     "clean": "rm -rf .next && rm -rf node_modules && npm install",
     "export-data": "tsx scripts/export-data.ts",
     "export-csv": "tsx scripts/export-csv.ts",
+    "check-users": "tsx scripts/check-users.ts",
     "postinstall": "prisma generate",
     "railway:deploy": "prisma migrate deploy && prisma generate && next build",
     "seed-traffic": "tsx prisma/seed-traffic.ts",
