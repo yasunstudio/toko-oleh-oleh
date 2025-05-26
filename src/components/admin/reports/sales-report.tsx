@@ -52,7 +52,11 @@ interface SalesData {
   }
 }
 
-export function SalesReport() {
+interface SalesReportProps {
+  refreshTrigger?: number
+}
+
+export function SalesReport({ refreshTrigger }: SalesReportProps) {
   const [salesData, setSalesData] = useState<SalesData | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -62,7 +66,7 @@ export function SalesReport() {
 
   useEffect(() => {
     fetchSalesData()
-  }, [period])
+  }, [period, refreshTrigger])
 
   const fetchSalesData = async () => {
     try {

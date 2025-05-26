@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
 import { UserForm } from '@/components/admin/user-form'
 import { Skeleton } from '@/components/ui/skeleton'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
 interface User {
   id: string
@@ -57,9 +58,17 @@ export default function EditUserPage() {
   if (!user) {
     return (
       <div className="p-6">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold mb-4">Pengguna Tidak Ditemukan</h1>
-          <p className="text-gray-600">Pengguna yang Anda cari tidak tersedia.</p>
+        <div className="flex flex-col items-center justify-center min-h-[40vh]">
+          <Card className="max-w-md w-full bg-card">
+            <CardHeader>
+              <CardTitle className="text-2xl font-bold text-foreground mb-2">
+                Pengguna Tidak Ditemukan
+              </CardTitle>
+              <p className="text-muted-foreground">
+                Pengguna yang Anda cari tidak tersedia.
+              </p>
+            </CardHeader>
+          </Card>
         </div>
       </div>
     )
@@ -67,12 +76,21 @@ export default function EditUserPage() {
 
   return (
     <div className="p-6">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Edit Pengguna</h1>
-        <p className="text-gray-600">Perbarui informasi pengguna {user.name}</p>
-      </div>
-
-      <UserForm user={user} isEdit />
+      <Card className="mb-8 bg-card">
+        <CardHeader>
+          <CardTitle className="text-3xl font-bold text-foreground">
+            Edit Pengguna
+          </CardTitle>
+          <p className="text-muted-foreground">
+            Perbarui informasi pengguna {user.name}
+          </p>
+        </CardHeader>
+      </Card>
+      <Card className="bg-card">
+        <CardContent>
+          <UserForm user={user} isEdit />
+        </CardContent>
+      </Card>
     </div>
   )
 }

@@ -111,7 +111,7 @@ export function ChangePasswordForm() {
           </Button>
         </div>
         {errors.currentPassword && (
-          <p className="text-red-500 text-sm mt-1">{errors.currentPassword.message}</p>
+          <p className="text-sm text-destructive mt-1">{errors.currentPassword.message}</p>
         )}
       </div>
 
@@ -139,7 +139,7 @@ export function ChangePasswordForm() {
           </Button>
         </div>
         {errors.newPassword && (
-          <p className="text-red-500 text-sm mt-1">{errors.newPassword.message}</p>
+          <p className="text-sm text-destructive mt-1">{errors.newPassword.message}</p>
         )}
       </div>
 
@@ -167,13 +167,13 @@ export function ChangePasswordForm() {
           </Button>
         </div>
         {errors.confirmPassword && (
-          <p className="text-red-500 text-sm mt-1">{errors.confirmPassword.message}</p>
+          <p className="text-sm text-destructive mt-1">{errors.confirmPassword.message}</p>
         )}
       </div>
 
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-        <h4 className="font-medium text-blue-800 mb-2">Tips Keamanan:</h4>
-        <ul className="text-sm text-blue-700 space-y-1">
+      <div className="bg-accent text-accent-foreground border border-border rounded-lg p-4">
+        <h4 className="font-medium text-foreground mb-2">Tips Keamanan:</h4>
+        <ul className="text-sm space-y-1">
           <li>• Gunakan kombinasi huruf besar, kecil, angka, dan simbol</li>
           <li>• Minimal 8 karakter untuk keamanan yang lebih baik</li>
           <li>• Jangan gunakan informasi pribadi yang mudah ditebak</li>

@@ -28,13 +28,13 @@ export function AboutSection() {
   ]
 
   return (
-    <section className="py-16 bg-gray-50">
+    <section className="py-16 bg-muted">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+          <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
             Mengapa Memilih Kami?
           </h2>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+          <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
             Kami berkomitmen memberikan pengalaman berbelanja terbaik dengan 
             produk berkualitas dan layanan yang memuaskan
           </p>
@@ -42,25 +42,25 @@ export function AboutSection() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
           {features.map((feature, index) => (
-            <Card key={index} className="text-center hover:shadow-lg transition-shadow duration-300">
+            <Card key={index} className="text-center hover:shadow-lg transition-shadow duration-300 bg-card">
               <CardContent className="p-6">
                 <div className="flex justify-center mb-4">
-                  <div className="p-3 bg-primary/10 rounded-full">
+                  <div className="p-3 bg-accent rounded-full">
                     <feature.icon className="h-8 w-8 text-primary" />
                   </div>
                 </div>
-                <h3 className="font-semibold text-lg mb-2">{feature.title}</h3>
-                <p className="text-gray-600 text-sm">{feature.description}</p>
+                <h3 className="font-semibold text-lg mb-2 text-foreground">{feature.title}</h3>
+                <p className="text-muted-foreground text-sm">{feature.description}</p>
               </CardContent>
             </Card>
           ))}
         </div>
 
-        <div className="bg-white rounded-lg p-8 text-center">
-          <h3 className="text-2xl font-bold text-gray-900 mb-4">
+        <div className="bg-card rounded-lg p-8 text-center border border-border">
+          <h3 className="text-2xl font-bold text-foreground mb-4">
             Siap Merasakan Cita Rasa Nusantara?
           </h3>
-          <p className="text-gray-600 mb-6 max-w-2xl mx-auto">
+          <p className="text-muted-foreground mb-6 max-w-2xl mx-auto">
             Jelajahi ribuan produk oleh-oleh khas dari berbagai daerah di Indonesia. 
             Pesan sekarang dan nikmati kelezatan yang autentik!
           </p>
@@ -70,7 +70,7 @@ export function AboutSection() {
                 Mulai Belanja
               </Link>
             </Button>
-            <Button size="lg" variant="outline" asChild>
+            <Button size="lg" variant="outline" asChild className="border-border hover:bg-accent hover:text-accent-foreground">
               <Link href="/about">
                 Pelajari Lebih Lanjut
               </Link>

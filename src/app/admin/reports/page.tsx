@@ -9,6 +9,8 @@ import { CustomerReport } from '@/components/admin/reports/customer-report'
 import { InventoryReport } from '@/components/admin/reports/inventory-report'
 import { FinancialReport } from '@/components/admin/reports/financial-report'
 import { TrafficReport } from '@/components/admin/reports/traffic-report'
+import { PaymentReport } from '@/components/admin/payment-report'
+import { AdminBreadcrumb } from '@/components/admin/admin-breadcrumb'
 import { 
   TrendingUp, 
   Package, 
@@ -16,7 +18,7 @@ import {
   Warehouse, 
   DollarSign, 
   BarChart3,
-  RefreshCw
+  CreditCard
 } from 'lucide-react'
 
 interface ReportSummary {
@@ -35,10 +37,19 @@ export default function AdminReportsPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState('sales')
+  const [refreshTrigger, setRefreshTrigger] = useState(0)
 
   useEffect(() => {
     fetchReportSummary()
   }, [])
+
+  const handleRefresh = async () => {
+    setIsLoading(true)
+    // Trigger refresh for all report components
+    setRefreshTrigger(prev => prev + 1)
+    // Also refresh the summary
+    await fetchReportSummary()
+  }
 
   const fetchReportSummary = async () => {
     try {
@@ -75,50 +86,52 @@ export default function AdminReportsPage() {
   }
 
   return (
-    <div className="p-6">
-      <div className="mb-8 flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Laporan & Analitik</h1>
-          <p className="text-gray-600">Analisis mendalam tentang performa bisnis Anda</p>
+    <div className="p-3 space-y-3">
+      <AdminBreadcrumb 
+        items={[
+          { label: 'Laporan' }
+        ]} 
+      />
+      
+      {/* Header Section - Compact */}
+      <div className="bg-card rounded-lg border p-3">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-xl font-bold text-foreground">Laporan & Analitik</h1>
+            <p className="text-xs text-muted-foreground">Pantau performa bisnis dan analisa data penjualan</p>
+          </div>
+          {!isLoading && summary && (
+            <div className="text-xs text-muted-foreground">
+              {summary.totalOrders} pesanan total
+            </div>
+          )}
         </div>
-        <button
-          onClick={fetchReportSummary}
-          disabled={isLoading}
-          className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
-          Refresh
-        </button>
       </div>
-
+      
       {/* Loading State */}
       {isLoading && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          {[1, 2, 3, 4].map((i) => (
-            <Card key={i}>
-              <CardContent className="p-6">
-                <div className="animate-pulse">
-                  <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
-                  <div className="h-8 bg-gray-200 rounded w-1/2 mb-2"></div>
-                  <div className="h-3 bg-gray-200 rounded w-full"></div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+        <Card className="bg-card">
+          <CardContent className="p-3">
+            <div className="animate-pulse">
+              <div className="h-4 bg-muted rounded w-3/4 mb-2"></div>
+              <div className="h-8 bg-muted rounded w-1/2 mb-2"></div>
+              <div className="h-3 bg-muted rounded w-full"></div>
+            </div>
+          </CardContent>
+        </Card>
       )}
 
       {/* Error State */}
       {!isLoading && error && (
-        <Card className="mb-8">
-          <CardContent className="p-6">
-            <div className="text-center text-red-600">
+        <Card className="bg-card">
+          <CardContent className="p-3">
+            <div className="text-center text-destructive">
               <TrendingUp className="h-12 w-12 mx-auto mb-4 opacity-50" />
               <h3 className="text-lg font-medium mb-2">Gagal Memuat Data</h3>
               <p className="text-sm">{error}</p>
               <button 
-                onClick={fetchReportSummary}
-                className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                onClick={handleRefresh}
+                className="mt-4 px-4 py-2 bg-primary text-primary-foreground rounded hover:bg-primary/90"
               >
                 Coba Lagi
               </button>
@@ -129,64 +142,61 @@ export default function AdminReportsPage() {
 
       {/* Summary Cards */}
       {!isLoading && !error && summary && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600 flex items-center">
-                <DollarSign className="h-4 w-4 mr-2" />
-                Total Penjualan
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{formatPrice(summary.totalSales)}</div>
-              <p className={`text-xs ${getGrowthColor(summary.salesGrowth)}`}>
-                {formatGrowth(summary.salesGrowth)} dari bulan lalu
-              </p>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <Card className="bg-card">
+            <CardContent className="p-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide flex items-center">
+                    <DollarSign className="h-3 w-3 mr-1" />
+                    Total Penjualan
+                  </p>
+                  <p className="text-xl font-bold text-foreground mt-0.5">{formatPrice(summary.totalSales)}</p>
+                  <p className={`text-xs ${getGrowthColor(summary.salesGrowth)}`}>{formatGrowth(summary.salesGrowth)} dari bulan lalu</p>
+                </div>
+              </div>
             </CardContent>
           </Card>
-
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600 flex items-center">
-                <TrendingUp className="h-4 w-4 mr-2" />
-                Total Pesanan
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{summary.totalOrders}</div>
-              <p className={`text-xs ${getGrowthColor(summary.orderGrowth)}`}>
-                {formatGrowth(summary.orderGrowth)} dari bulan lalu
-              </p>
+          <Card className="bg-card">
+            <CardContent className="p-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide flex items-center">
+                    <TrendingUp className="h-3 w-3 mr-1" />
+                    Total Pesanan
+                  </p>
+                  <p className="text-xl font-bold text-foreground mt-0.5">{summary.totalOrders}</p>
+                  <p className={`text-xs ${getGrowthColor(summary.orderGrowth)}`}>{formatGrowth(summary.orderGrowth)} dari bulan lalu</p>
+                </div>
+              </div>
             </CardContent>
           </Card>
-
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600 flex items-center">
-                <Users className="h-4 w-4 mr-2" />
-                Total Pelanggan
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{summary.totalCustomers}</div>
-              <p className={`text-xs ${getGrowthColor(summary.customerGrowth)}`}>
-                {formatGrowth(summary.customerGrowth)} dari bulan lalu
-              </p>
+          <Card className="bg-card">
+            <CardContent className="p-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide flex items-center">
+                    <Users className="h-3 w-3 mr-1" />
+                    Total Pelanggan
+                  </p>
+                  <p className="text-xl font-bold text-foreground mt-0.5">{summary.totalCustomers}</p>
+                  <p className={`text-xs ${getGrowthColor(summary.customerGrowth)}`}>{formatGrowth(summary.customerGrowth)} dari bulan lalu</p>
+                </div>
+              </div>
             </CardContent>
           </Card>
-
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600 flex items-center">
-                <Package className="h-4 w-4 mr-2" />
-                Total Produk
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{summary.totalProducts}</div>
-              <p className={`text-xs ${getGrowthColor(summary.productGrowth)}`}>
-                {formatGrowth(summary.productGrowth)} dari bulan lalu
-              </p>
+          <Card className="bg-card">
+            <CardContent className="p-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide flex items-center">
+                    <Package className="h-3 w-3 mr-1" />
+                    Total Produk
+                  </p>
+                  <p className="text-xl font-bold text-foreground mt-0.5">{summary.totalProducts}</p>
+                  <p className={`text-xs ${getGrowthColor(summary.productGrowth)}`}>{formatGrowth(summary.productGrowth)} dari bulan lalu</p>
+                </div>
+              </div>
             </CardContent>
           </Card>
         </div>
@@ -194,7 +204,7 @@ export default function AdminReportsPage() {
 
       {/* Reports Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-3 lg:grid-cols-6">
+        <TabsList className="grid w-full grid-cols-3 lg:grid-cols-7">
           <TabsTrigger value="sales" className="flex items-center text-xs lg:text-sm">
             <TrendingUp className="h-3 w-3 lg:h-4 lg:w-4 mr-1 lg:mr-2" />
             <span className="hidden sm:inline">Penjualan</span>
@@ -225,30 +235,32 @@ export default function AdminReportsPage() {
             <span className="hidden sm:inline">Traffic</span>
             <span className="sm:hidden">Data</span>
           </TabsTrigger>
+          <TabsTrigger value="payments" className="flex items-center text-xs lg:text-sm">
+            <CreditCard className="h-3 w-3 lg:h-4 lg:w-4 mr-1 lg:mr-2" />
+            <span className="hidden sm:inline">Pembayaran</span>
+            <span className="sm:hidden">Pay</span>
+          </TabsTrigger>
         </TabsList>
-        
-        <TabsContent value="sales" className="mt-6">
-          <SalesReport />
+        <TabsContent value="sales" className="mt-3">
+          <SalesReport refreshTrigger={refreshTrigger} />
         </TabsContent>
-        
-        <TabsContent value="products" className="mt-6">
-          <ProductReport />
+        <TabsContent value="products" className="mt-3">
+          <ProductReport refreshTrigger={refreshTrigger} />
         </TabsContent>
-        
-        <TabsContent value="customers" className="mt-6">
-          <CustomerReport />
+        <TabsContent value="customers" className="mt-3">
+          <CustomerReport refreshTrigger={refreshTrigger} />
         </TabsContent>
-        
-        <TabsContent value="inventory" className="mt-6">
-          <InventoryReport />
+        <TabsContent value="inventory" className="mt-3">
+          <InventoryReport refreshTrigger={refreshTrigger} />
         </TabsContent>
-        
-        <TabsContent value="financial" className="mt-6">
-          <FinancialReport />
+        <TabsContent value="financial" className="mt-3">
+          <FinancialReport refreshTrigger={refreshTrigger} />
         </TabsContent>
-        
-        <TabsContent value="traffic" className="mt-6">
-          <TrafficReport />
+        <TabsContent value="traffic" className="mt-3">
+          <TrafficReport refreshTrigger={refreshTrigger} />
+        </TabsContent>
+        <TabsContent value="payments" className="mt-3">
+          <PaymentReport />
         </TabsContent>
       </Tabs>
     </div>

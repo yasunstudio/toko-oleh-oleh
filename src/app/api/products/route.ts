@@ -13,8 +13,28 @@ export async function GET(req: NextRequest) {
     const minPrice = searchParams.get('minPrice')
     const maxPrice = searchParams.get('maxPrice')
     const exclude = searchParams.get('exclude') // For related products
+    const sort = searchParams.get('sort') || 'newest'
     
     const skip = (page - 1) * limit
+    
+    // Define sort options
+    const getSortOption = (sortBy: string) => {
+      switch (sortBy) {
+        case 'oldest':
+          return { createdAt: 'asc' as const }
+        case 'price-low':
+          return { price: 'asc' as const }
+        case 'price-high':
+          return { price: 'desc' as const }
+        case 'name-asc':
+          return { name: 'asc' as const }
+        case 'name-desc':
+          return { name: 'desc' as const }
+        case 'newest':
+        default:
+          return { createdAt: 'desc' as const }
+      }
+    }
     
     const where = {
       isActive: true,
@@ -49,7 +69,7 @@ export async function GET(req: NextRequest) {
           },
           images: true
         },
-        orderBy: { createdAt: 'desc' },
+        orderBy: getSortOption(sort),
         skip,
         take: limit
       }),

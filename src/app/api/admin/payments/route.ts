@@ -38,7 +38,34 @@ export async function GET() {
       orderBy: { createdAt: 'desc' }
     })
 
-    return NextResponse.json(payments)
+    // Format bank account information
+    const paymentsWithBankInfo = await Promise.all(
+      payments.map(async (payment) => {
+        let formattedBankAccount = payment.bankAccount
+
+        // If bankAccount looks like an ID (starts with c), fetch the bank account details
+        if (payment.bankAccount && payment.bankAccount.startsWith('c') && !payment.bankAccount.includes('-')) {
+          try {
+            const bankAccount = await prisma.bankAccount.findUnique({
+              where: { id: payment.bankAccount }
+            })
+            if (bankAccount) {
+              formattedBankAccount = `${bankAccount.bankName} - ${bankAccount.accountNumber} (${bankAccount.accountName})`
+            }
+          } catch (error) {
+            // If bank account not found, keep original value
+            console.warn(`Bank account not found for ID: ${payment.bankAccount}`)
+          }
+        }
+
+        return {
+          ...payment,
+          bankAccount: formattedBankAccount
+        }
+      })
+    )
+
+    return NextResponse.json(paymentsWithBankInfo)
   } catch (error) {
     console.error('Error fetching payments:', error)
     return NextResponse.json(

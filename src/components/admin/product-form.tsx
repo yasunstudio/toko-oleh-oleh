@@ -229,72 +229,76 @@ export function ProductForm({ product, isEdit = false }: ProductFormProps) {
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Product Info */}
-        <Card>
+        <Card className="bg-card">
           <CardHeader>
-            <CardTitle>Informasi Produk</CardTitle>
+            <CardTitle className="text-foreground">Informasi Produk</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <Label htmlFor="name">Nama Produk *</Label>
+              <Label htmlFor="name" className="text-foreground">Nama Produk *</Label>
               <Input
                 id="name"
                 {...register('name')}
                 placeholder="Masukkan nama produk"
+                className="bg-background border-border text-foreground placeholder:text-muted-foreground"
               />
               {errors.name && (
-                <p className="text-red-500 text-sm mt-1">{errors.name.message}</p>
+                <p className="text-sm text-destructive mt-1">{errors.name.message}</p>
               )}
             </div>
 
             <div>
-              <Label htmlFor="description">Deskripsi</Label>
+              <Label htmlFor="description" className="text-foreground">Deskripsi</Label>
               <Textarea
                 id="description"
                 {...register('description')}
                 placeholder="Deskripsi produk"
                 rows={4}
+                className="bg-background border-border text-foreground placeholder:text-muted-foreground"
               />
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="price">Harga (Rp) *</Label>
+                <Label htmlFor="price" className="text-foreground">Harga (Rp) *</Label>
                 <Input
                   id="price"
                   type="number"
                   {...register('price', { valueAsNumber: true })}
                   placeholder="0"
+                  className="bg-background border-border text-foreground placeholder:text-muted-foreground"
                 />
                 {errors.price && (
-                  <p className="text-red-500 text-sm mt-1">{errors.price.message}</p>
+                  <p className="text-sm text-destructive mt-1">{errors.price.message}</p>
                 )}
               </div>
 
               <div>
-                <Label htmlFor="stock">Stok *</Label>
+                <Label htmlFor="stock" className="text-foreground">Stok *</Label>
                 <Input
                   id="stock"
                   type="number"
                   {...register('stock', { valueAsNumber: true })}
                   placeholder="0"
+                  className="bg-background border-border text-foreground placeholder:text-muted-foreground"
                 />
                 {errors.stock && (
-                  <p className="text-red-500 text-sm mt-1">{errors.stock.message}</p>
+                  <p className="text-sm text-destructive mt-1">{errors.stock.message}</p>
                 )}
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="categoryId">Kategori *</Label>
+                <Label htmlFor="categoryId" className="text-foreground">Kategori *</Label>
                 <Select 
                   onValueChange={(value) => setValue('categoryId', value)}
                   defaultValue={product?.category?.id}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="bg-background border-border text-foreground">
                     <SelectValue placeholder="Pilih kategori" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="bg-popover border-border text-popover-foreground">
                     {categories.map((category) => (
                       <SelectItem key={category.id} value={category.id}>
                         {category.name}
@@ -303,39 +307,41 @@ export function ProductForm({ product, isEdit = false }: ProductFormProps) {
                   </SelectContent>
                 </Select>
                 {errors.categoryId && (
-                  <p className="text-red-500 text-sm mt-1">{errors.categoryId.message}</p>
+                  <p className="text-sm text-destructive mt-1">{errors.categoryId.message}</p>
                 )}
               </div>
 
               <div>
-                <Label htmlFor="weight">Berat (gram)</Label>
+                <Label htmlFor="weight" className="text-foreground">Berat (gram)</Label>
                 <Input
                   id="weight"
                   type="number"
                   {...register('weight', { valueAsNumber: true })}
                   placeholder="0"
+                  className="bg-background border-border text-foreground placeholder:text-muted-foreground"
                 />
               </div>
             </div>
 
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-2 pt-2">
               <Switch
+                id="isActive"
                 checked={watch('isActive')}
                 onCheckedChange={(checked) => setValue('isActive', checked)}
               />
-              <Label>Produk Aktif</Label>
+              <Label htmlFor="isActive" className="text-foreground">Produk Aktif</Label>
             </div>
           </CardContent>
         </Card>
 
         {/* Product Images */}
-        <Card>
+        <Card className="bg-card">
           <CardHeader>
-            <CardTitle>Gambar Produk</CardTitle>
+            <CardTitle className="text-foreground">Gambar Produk</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <Label htmlFor="images">Upload Gambar</Label>
+              <Label htmlFor="images" className="text-foreground">Upload Gambar (Max. 5MB per file)</Label>
               <Input
                 id="images"
                 type="file"
@@ -343,28 +349,29 @@ export function ProductForm({ product, isEdit = false }: ProductFormProps) {
                 accept="image/*"
                 onChange={handleImageUpload}
                 disabled={uploading}
+                className="bg-background border-border text-foreground placeholder:text-muted-foreground file:text-sm file:font-medium file:text-foreground file:bg-muted file:border-0 file:rounded-md file:px-3 file:py-2 hover:file:bg-accent"
               />
-              <p className="text-xs text-gray-500 mt-1">
-                Format: JPG, PNG. Maksimal 5MB per file
+              <p className="text-xs text-muted-foreground mt-1">
+                Format: JPG, PNG. Anda dapat memilih beberapa gambar sekaligus.
               </p>
             </div>
 
             {images.length > 0 && (
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
                 {images.map((image, index) => (
-                  <div key={index} className="relative aspect-square">
+                  <div key={index} className="relative aspect-square group">
                     <Image
                       src={image}
                       alt={`Product image ${index + 1}`}
                       fill
-                      className="object-cover rounded border"
-                      sizes="(max-width: 768px) 100vw, 200px"
+                      className="object-cover rounded border border-border group-hover:opacity-80 transition-opacity"
+                      sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, 200px"
                     />
                     <Button
                       type="button"
                       variant="destructive"
-                      size="sm"
-                      className="absolute top-2 right-2"
+                      size="icon"
+                      className="absolute top-1 right-1 h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity"
                       onClick={() => removeImage(index)}
                     >
                       <X className="h-4 w-4" />
@@ -375,8 +382,11 @@ export function ProductForm({ product, isEdit = false }: ProductFormProps) {
             )}
 
             {uploading && (
-              <div className="text-center text-sm text-gray-600">
-                Mengupload gambar...
+              <div className="text-center text-sm text-muted-foreground">
+                <div className="flex items-center justify-center space-x-2">
+                  <Upload className="h-4 w-4 animate-pulse" />
+                  <span>Mengupload gambar...</span>
+                </div>
               </div>
             )}
           </CardContent>
@@ -384,12 +394,13 @@ export function ProductForm({ product, isEdit = false }: ProductFormProps) {
       </div>
 
       {/* Submit Buttons */}
-      <div className="flex gap-4">
+      <div className="flex gap-4 pt-2">
         <Button
           type="button"
           variant="outline"
           onClick={() => router.back()}
           disabled={loading}
+          className="border-border hover:bg-accent hover:text-accent-foreground"
         >
           Batal
         </Button>

@@ -70,7 +70,7 @@ export async function POST(req: NextRequest) {
 
     if (product.stock < quantity) {
       return NextResponse.json(
-        { error: 'Stok tidak mencukupi' },
+        { error: `Stok tidak mencukupi. Stok tersedia: ${product.stock}` },
         { status: 400 }
       )
     }
@@ -93,7 +93,7 @@ export async function POST(req: NextRequest) {
       
       if (product.stock < newQuantity) {
         return NextResponse.json(
-          { error: 'Stok tidak mencukupi' },
+          { error: `Stok tidak mencukupi. Stok tersedia: ${product.stock}, di keranjang: ${existingCartItem.quantity}` },
           { status: 400 }
         )
       }

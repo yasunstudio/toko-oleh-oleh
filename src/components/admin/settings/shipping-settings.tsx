@@ -132,9 +132,9 @@ export function ShippingSettings() {
 
   return (
     <div className="space-y-6">
-      <Card>
+      <Card className="bg-card">
         <CardHeader>
-          <CardTitle>Pengaturan Pengiriman</CardTitle>
+          <CardTitle className="text-foreground">Pengaturan Pengiriman</CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
@@ -148,7 +148,7 @@ export function ShippingSettings() {
                   {...register('freeShippingThreshold', { valueAsNumber: true })}
                   placeholder="100000"
                 />
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="text-xs text-muted-foreground mt-1">
                   Gratis ongkir untuk pesanan di atas {formatPrice(watch('freeShippingThreshold') || 0)}
                 </p>
               </div>
@@ -161,7 +161,7 @@ export function ShippingSettings() {
                   {...register('defaultShippingCost', { valueAsNumber: true })}
                   placeholder="15000"
                 />
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="text-xs text-muted-foreground mt-1">
                   Default: {formatPrice(watch('defaultShippingCost') || 0)}
                 </p>
               </div>
@@ -187,16 +187,16 @@ export function ShippingSettings() {
                   {...register('processingTime', { valueAsNumber: true })}
                   placeholder="1"
                 />
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="text-xs text-muted-foreground mt-1">
                   Waktu proses sebelum pengiriman: {watch('processingTime') || 1} hari
                 </p>
               </div>
             </div>
 
             {/* Shipping Zones */}
-            <div className="border-t pt-6">
+            <div className="border-t border-border pt-6">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-medium">Zona Pengiriman</h3>
+                <h3 className="text-lg font-medium text-foreground">Zona Pengiriman</h3>
                 <Button type="button" variant="outline" onClick={addZone}>
                   <Plus className="h-4 w-4 mr-2" />
                  Tambah Zona
@@ -205,7 +205,7 @@ export function ShippingSettings() {
 
              <div className="space-y-4">
                {zones.map((zone, index) => (
-                 <Card key={zone.id}>
+                 <Card key={zone.id} className="bg-card border-border">
                    <CardContent className="p-4">
                      <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 items-end">
                        <div>
@@ -252,10 +252,9 @@ export function ShippingSettings() {
                          />
                          <Button
                            type="button"
-                           variant="outline"
+                           variant="destructive"
                            size="sm"
                            onClick={() => removeZone(zone.id)}
-                           className="text-red-600"
                          >
                            <Trash2 className="h-4 w-4" />
                          </Button>

@@ -40,13 +40,13 @@ export default function ProductDetailPage() {
       <MainLayout>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
-            <Skeleton className="aspect-square rounded-lg" />
+            <Skeleton className="aspect-square rounded-lg bg-muted" />
             <div className="space-y-4">
-              <Skeleton className="h-8 w-3/4" />
-              <Skeleton className="h-6 w-1/2" />
-              <Skeleton className="h-20 w-full" />
-              <Skeleton className="h-12 w-1/3" />
-              <Skeleton className="h-10 w-full" />
+              <Skeleton className="h-8 w-3/4 bg-muted" />
+              <Skeleton className="h-6 w-1/2 bg-muted" />
+              <Skeleton className="h-20 w-full bg-muted" />
+              <Skeleton className="h-12 w-1/3 bg-muted" />
+              <Skeleton className="h-10 w-full bg-muted" />
             </div>
           </div>
         </div>
@@ -59,8 +59,8 @@ export default function ProductDetailPage() {
       <MainLayout>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="text-center">
-            <h1 className="text-2xl font-bold mb-4">Produk Tidak Ditemukan</h1>
-            <p className="text-gray-600">Produk yang Anda cari tidak tersedia.</p>
+            <h1 className="text-2xl font-bold mb-4 text-foreground">Produk Tidak Ditemukan</h1>
+            <p className="text-muted-foreground">Produk yang Anda cari tidak tersedia.</p>
           </div>
         </div>
       </MainLayout>
@@ -72,11 +72,11 @@ export default function ProductDetailPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Breadcrumb */}
         <nav className="flex mb-8 text-sm">
-          <a href="/" className="text-gray-500 hover:text-gray-700">Home</a>
-          <span className="mx-2 text-gray-400">/</span>
-          <a href="/products" className="text-gray-500 hover:text-gray-700">Produk</a>
-          <span className="mx-2 text-gray-400">/</span>
-          <span className="text-gray-900">{product.name}</span>
+          <a href="/" className="text-muted-foreground hover:text-foreground">Home</a>
+          <span className="mx-2 text-muted-foreground">/</span>
+          <a href="/products" className="text-muted-foreground hover:text-foreground">Produk</a>
+          <span className="mx-2 text-muted-foreground">/</span>
+          <span className="text-foreground">{product.name}</span>
         </nav>
 
         {/* Product Details */}

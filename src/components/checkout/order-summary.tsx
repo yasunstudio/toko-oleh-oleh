@@ -29,13 +29,13 @@ export function OrderSummary({ items }: OrderSummaryProps) {
   const total = subtotal + shippingCost
 
   return (
-    <Card className="sticky top-4">
+    <Card className="sticky top-4 bg-card border-border">
       <CardHeader>
-        <CardTitle>Ringkasan Pesanan</CardTitle>
+        <CardTitle className="text-foreground">Ringkasan Pesanan</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         {/* Items List */}
-        <div className="space-y-4">
+        <div className="space-y-4 max-h-96 overflow-y-auto pr-2">
           {items.map((item) => (
             <div key={item.id} className="flex space-x-3">
               <div className="flex-shrink-0">
@@ -44,14 +44,14 @@ export function OrderSummary({ items }: OrderSummaryProps) {
                   alt={item.product.name}
                   width={60}
                   height={60}
-                  className="rounded object-cover"
+                  className="rounded object-cover border border-border"
                 />
               </div>
               <div className="flex-1 min-w-0">
-                <h4 className="text-sm font-medium text-gray-900 truncate">
+                <h4 className="text-sm font-medium text-foreground truncate">
                   {item.product.name}
                 </h4>
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-muted-foreground">
                   Qty: {item.quantity}
                 </p>
                 <p className="text-sm font-medium text-primary">
@@ -62,31 +62,31 @@ export function OrderSummary({ items }: OrderSummaryProps) {
           ))}
         </div>
 
-        <Separator />
+        <Separator className="bg-border" />
 
         {/* Price Breakdown */}
         <div className="space-y-2">
-          <div className="flex justify-between">
-            <span>Subtotal ({items.length} item)</span>
-            <span>{formatPrice(subtotal)}</span>
+          <div className="flex justify-between text-sm">
+            <span className="text-muted-foreground">Subtotal ({items.length} item)</span>
+            <span className="text-foreground">{formatPrice(subtotal)}</span>
           </div>
-          <div className="flex justify-between">
-            <span>Ongkos Kirim</span>
-            <span className={shippingCost === 0 ? 'text-green-600' : ''}>
+          <div className="flex justify-between text-sm">
+            <span className="text-muted-foreground">Ongkos Kirim</span>
+            <span className={shippingCost === 0 ? 'text-primary font-medium' : 'text-foreground'}>
               {shippingCost === 0 ? 'GRATIS' : formatPrice(shippingCost)}
             </span>
           </div>
-          {subtotal < 100000 && (
-            <p className="text-xs text-gray-500">
+          {subtotal > 0 && subtotal < 100000 && (
+            <p className="text-xs text-muted-foreground">
               Gratis ongkir untuk pembelian di atas {formatPrice(100000)}
             </p>
           )}
         </div>
 
-        <Separator />
+        <Separator className="bg-border" />
 
         <div className="flex justify-between font-bold text-lg">
-          <span>Total Pembayaran</span>
+          <span className="text-foreground">Total Pembayaran</span>
           <span className="text-primary">{formatPrice(total)}</span>
         </div>
       </CardContent>

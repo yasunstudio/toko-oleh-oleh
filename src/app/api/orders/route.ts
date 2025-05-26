@@ -15,12 +15,10 @@ export async function GET() {
       )
     }
 
-    const where = session.user.role === 'ADMIN' 
-      ? {} 
-      : { userId: session.user.id }
-
+    // Always filter by user ID for "My Orders" - even for admins
+    // Admins should use /api/admin/orders to see all orders
     const orders = await prisma.order.findMany({
-      where,
+      where: { userId: session.user.id },
       include: {
         user: {
           select: { name: true, email: true, phone: true }

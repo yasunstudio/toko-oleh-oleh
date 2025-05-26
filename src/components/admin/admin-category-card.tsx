@@ -82,22 +82,23 @@ export function AdminCategoryCard({ category, onUpdate }: AdminCategoryCardProps
   }
 
   return (
-    <Card className="group">
+    <Card className="group bg-card">
       <div className="relative aspect-video overflow-hidden rounded-t-lg">
         <Image
           src={category.image || '/placeholder-category.jpg'}
           alt={category.name}
           fill
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
           className="object-cover group-hover:scale-105 transition-transform duration-300"
         />
       </div>
 
       <CardContent className="p-4">
-        <h3 className="font-semibold text-lg mb-2">
+        <h3 className="font-semibold text-lg mb-2 text-foreground">
           {category.name}
         </h3>
         
-        <p className="text-gray-600 text-sm mb-3 line-clamp-2">
+        <p className="text-muted-foreground text-sm mb-3 line-clamp-2">
           {category.description || 'Tidak ada deskripsi'}
         </p>
 
@@ -105,7 +106,7 @@ export function AdminCategoryCard({ category, onUpdate }: AdminCategoryCardProps
           <Badge variant="secondary">
             {category._count.products} produk
           </Badge>
-          <span className="text-xs text-gray-500">
+          <span className="text-xs text-muted-foreground">
             /{category.slug}
           </span>
         </div>
@@ -132,16 +133,16 @@ export function AdminCategoryCard({ category, onUpdate }: AdminCategoryCardProps
               <Button 
                 variant="outline" 
                 size="sm" 
-                className="text-red-600 hover:text-red-700"
+                className="text-destructive hover:text-destructive/90"
                 disabled={category._count.products > 0}
               >
                 <Trash2 className="h-4 w-4" />
               </Button>
             </AlertDialogTrigger>
-            <AlertDialogContent>
+            <AlertDialogContent className="bg-card">
               <AlertDialogHeader>
-                <AlertDialogTitle>Hapus Kategori</AlertDialogTitle>
-                <AlertDialogDescription>
+                <AlertDialogTitle className="text-foreground">Hapus Kategori</AlertDialogTitle>
+                <AlertDialogDescription className="text-muted-foreground">
                   Apakah Anda yakin ingin menghapus kategori "{category.name}"? 
                   Tindakan ini tidak dapat dibatalkan.
                 </AlertDialogDescription>
@@ -150,7 +151,7 @@ export function AdminCategoryCard({ category, onUpdate }: AdminCategoryCardProps
                 <AlertDialogCancel>Batal</AlertDialogCancel>
                 <AlertDialogAction
                   onClick={handleDelete}
-                  className="bg-red-600 hover:bg-red-700"
+                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                   disabled={loading}
                 >
                   {loading ? 'Menghapus...' : 'Hapus'}

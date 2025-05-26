@@ -67,7 +67,11 @@ interface CustomerData {
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042']
 
-export function CustomerReport() {
+interface CustomerReportProps {
+  refreshTrigger?: number
+}
+
+export function CustomerReport({ refreshTrigger }: CustomerReportProps) {
   const [data, setData] = useState<CustomerData | null>(null)
   const [loading, setLoading] = useState(true)
   const [period, setPeriod] = useState('30')
@@ -149,7 +153,7 @@ export function CustomerReport() {
 
   useEffect(() => {
     fetchData()
-  }, [period])
+  }, [period, refreshTrigger])
 
   if (loading) {
     return (

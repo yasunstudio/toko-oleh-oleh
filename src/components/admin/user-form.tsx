@@ -115,82 +115,89 @@ export function UserForm({ user, isEdit = false }: UserFormProps) {
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Personal Information */}
-        <Card>
+        <Card className="bg-card">
           <CardHeader>
-            <CardTitle>Informasi Personal</CardTitle>
+            <CardTitle className="text-foreground">Informasi Personal</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <Label htmlFor="name">Nama Lengkap *</Label>
+              <Label htmlFor="name" className="text-foreground">Nama Lengkap *</Label>
               <Input
                 id="name"
                 {...register('name')}
                 placeholder="Masukkan nama lengkap"
+                className="bg-background border-border text-foreground placeholder:text-muted-foreground"
               />
               {errors.name && (
-                <p className="text-red-500 text-sm mt-1">{errors.name.message}</p>
+                <p className="text-sm text-destructive mt-1">{errors.name.message}</p>
               )}
             </div>
 
             <div>
-              <Label htmlFor="email">Email *</Label>
+              <Label htmlFor="email" className="text-foreground">Email *</Label>
               <Input
                 id="email"
                 type="email"
                 {...register('email')}
                 placeholder="nama@example.com"
+                className="bg-background border-border text-foreground placeholder:text-muted-foreground"
               />
               {errors.email && (
-                <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>
+                <p className="text-sm text-destructive mt-1">{errors.email.message}</p>
               )}
             </div>
 
             <div>
-              <Label htmlFor="phone">No. Telepon</Label>
+              <Label htmlFor="phone" className="text-foreground">No. Telepon</Label>
               <Input
                 id="phone"
                 type="tel"
                 {...register('phone')}
                 placeholder="08123456789"
+                className="bg-background border-border text-foreground placeholder:text-muted-foreground"
               />
             </div>
 
             <div>
-              <Label htmlFor="address">Alamat</Label>
+              <Label htmlFor="address" className="text-foreground">Alamat</Label>
               <Textarea
                 id="address"
                 {...register('address')}
                 placeholder="Alamat lengkap"
                 rows={3}
+                className="bg-background border-border text-foreground placeholder:text-muted-foreground"
               />
             </div>
           </CardContent>
         </Card>
 
         {/* Account Settings */}
-        <Card>
+        <Card className="bg-card">
           <CardHeader>
-            <CardTitle>Pengaturan Akun</CardTitle>
+            <CardTitle className="text-foreground">Pengaturan Akun</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <Label htmlFor="role">Role *</Label>
-              <Select onValueChange={(value) => setValue('role', value as 'ADMIN' | 'CUSTOMER')}>
-                <SelectTrigger>
+              <Label htmlFor="role" className="text-foreground">Role *</Label>
+              <Select 
+                onValueChange={(value) => setValue('role', value as 'ADMIN' | 'CUSTOMER')}
+                defaultValue={watch('role')}
+              >
+                <SelectTrigger className="bg-background border-border text-foreground">
                   <SelectValue placeholder="Pilih role" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-popover border-border text-popover-foreground">
                   <SelectItem value="CUSTOMER">Pelanggan</SelectItem>
                   <SelectItem value="ADMIN">Administrator</SelectItem>
                 </SelectContent>
               </Select>
               {errors.role && (
-                <p className="text-red-500 text-sm mt-1">{errors.role.message}</p>
+                <p className="text-sm text-destructive mt-1">{errors.role.message}</p>
               )}
             </div>
 
             <div>
-              <Label htmlFor="password">
+              <Label htmlFor="password" className="text-foreground">
                 Password {isEdit ? '(Kosongkan jika tidak ingin mengubah)' : '*'}
               </Label>
               <div className="relative">
@@ -199,12 +206,13 @@ export function UserForm({ user, isEdit = false }: UserFormProps) {
                   type={showPassword ? 'text' : 'password'}
                   {...register('password')}
                   placeholder={isEdit ? 'Password baru' : 'Password (min. 6 karakter)'}
+                  className="bg-background border-border text-foreground placeholder:text-muted-foreground pr-10"
                 />
                 <Button
                   type="button"
                   variant="ghost"
                   size="sm"
-                  className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                  className="absolute right-0 top-0 h-full px-3 py-2 text-muted-foreground hover:bg-transparent hover:text-foreground"
                   onClick={() => setShowPassword(!showPassword)}
                 >
                   {showPassword ? (
@@ -215,27 +223,28 @@ export function UserForm({ user, isEdit = false }: UserFormProps) {
                 </Button>
               </div>
               {errors.password && (
-                <p className="text-red-500 text-sm mt-1">{errors.password.message}</p>
+                <p className="text-sm text-destructive mt-1">{errors.password.message}</p>
               )}
             </div>
 
             {!isEdit && (
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center space-x-2 pt-2">
                 <Checkbox
                   id="sendWelcomeEmail"
                   checked={watch('sendWelcomeEmail')}
                   onCheckedChange={(checked) => setValue('sendWelcomeEmail', checked as boolean)}
+                  className="border-border data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground"
                 />
-                <Label htmlFor="sendWelcomeEmail" className="text-sm">
+                <Label htmlFor="sendWelcomeEmail" className="text-sm font-medium text-foreground">
                   Kirim email selamat datang
                 </Label>
               </div>
             )}
 
             {isEdit && (
-              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                <h4 className="font-medium text-yellow-800 mb-2">Perhatian:</h4>
-                <ul className="text-sm text-yellow-700 space-y-1">
+              <div className="bg-accent/50 border border-border rounded-lg p-4">
+                <h4 className="font-medium text-accent-foreground mb-2">Perhatian:</h4>
+                <ul className="text-sm text-muted-foreground space-y-1">
                   <li>• Mengubah email akan memerlukan verifikasi ulang</li>
                   <li>• Mengubah role akan mempengaruhi akses pengguna</li>
                   <li>• Password kosong = tidak mengubah password</li>
@@ -247,12 +256,13 @@ export function UserForm({ user, isEdit = false }: UserFormProps) {
       </div>
 
       {/* Submit Buttons */}
-      <div className="flex gap-4">
+      <div className="flex gap-4 pt-2">
         <Button
           type="button"
           variant="outline"
           onClick={() => router.back()}
           disabled={loading}
+          className="border-border hover:bg-accent hover:text-accent-foreground"
         >
           Batal
         </Button>

@@ -13,7 +13,16 @@ export async function testAuthAction() {
   }
 }
 
-export async function createProductAction(data: any) {
+export async function createProductAction(data: {
+  name: string;
+  description: string;
+  price: number;
+  categoryId: string;
+  stock: number;
+  weight?: number;
+  isActive?: boolean;
+  images?: string[];
+}) {
   const session = await getServerSession(authOptions)
   
   if (!session) {

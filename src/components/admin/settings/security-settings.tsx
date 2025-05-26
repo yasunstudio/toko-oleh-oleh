@@ -148,10 +148,9 @@ export function SecuritySettings() {
   return (
     <div className="space-y-6">
       {/* Authentication Security */}
-      <Card>
+      <Card className="bg-card">
         <CardHeader>
-          <CardTitle className="flex items-center">
-            <Shield className="h-5 w-5 mr-2" />
+          <CardTitle className="text-foreground">
             Keamanan Autentikasi
           </CardTitle>
         </CardHeader>
@@ -167,7 +166,7 @@ export function SecuritySettings() {
                   {...register('maxLoginAttempts', { valueAsNumber: true })}
                   placeholder="5"
                 />
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="text-xs text-muted-foreground mt-1">
                   Akun akan dikunci setelah {watch('maxLoginAttempts') || 5} percobaan gagal
                 </p>
               </div>
@@ -180,7 +179,7 @@ export function SecuritySettings() {
                   {...register('lockoutDuration', { valueAsNumber: true })}
                   placeholder="30"
                 />
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="text-xs text-muted-foreground mt-1">
                   Akun akan terkunci selama {watch('lockoutDuration') || 30} menit
                 </p>
               </div>
@@ -193,15 +192,15 @@ export function SecuritySettings() {
                   {...register('sessionTimeout', { valueAsNumber: true })}
                   placeholder="1440"
                 />
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="text-xs text-muted-foreground mt-1">
                   Sesi akan berakhir setelah {watch('sessionTimeout') || 1440} menit tidak aktif
                 </p>
               </div>
             </div>
 
             {/* Password Policy */}
-            <div className="border-t pt-6">
-              <h3 className="text-lg font-medium mb-4">Kebijakan Password</h3>
+            <div className="border-t border-border pt-6">
+              <h3 className="text-lg font-medium text-foreground mb-4">Kebijakan Password</h3>
               <div className="space-y-4">
                 <div>
                   <Label htmlFor="passwordMinLength">Panjang Minimal Password</Label>
@@ -245,11 +244,11 @@ export function SecuritySettings() {
             </div>
 
             {/* Two Factor Authentication */}
-            <div className="border-t pt-6">
+            <div className="border-t border-border pt-6">
               <div className="flex items-center justify-between">
                 <div>
                   <Label htmlFor="enableTwoFactor">Two-Factor Authentication</Label>
-                  <p className="text-sm text-gray-600">
+                  <p className="text-sm text-muted-foreground">
                     Aktifkan 2FA untuk lapisan keamanan tambahan
                   </p>
                 </div>
@@ -271,9 +270,9 @@ export function SecuritySettings() {
       </Card>
 
       {/* API Security */}
-      <Card>
+      <Card className="bg-card">
         <CardHeader>
-          <CardTitle className="flex items-center">
+          <CardTitle className="flex items-center text-foreground">
             <Key className="h-5 w-5 mr-2" />
             Keamanan API
           </CardTitle>
@@ -305,7 +304,7 @@ export function SecuritySettings() {
                 Regenerate
               </Button>
             </div>
-            <p className="text-xs text-gray-500 mt-1">
+            <p className="text-xs text-muted-foreground mt-1">
               Gunakan API key ini untuk mengakses API eksternal
             </p>
           </div>
@@ -313,9 +312,9 @@ export function SecuritySettings() {
       </Card>
 
       {/* Security Logs */}
-      <Card>
+      <Card className="bg-card">
         <CardHeader>
-          <CardTitle className="flex items-center">
+          <CardTitle className="flex items-center text-foreground">
             <AlertTriangle className="h-5 w-5 mr-2" />
             Log Keamanan
           </CardTitle>
@@ -323,18 +322,18 @@ export function SecuritySettings() {
         <CardContent>
           <div className="space-y-4">
             {securityLogs.length === 0 ? (
-              <p className="text-gray-500 text-center py-8">Belum ada log keamanan</p>
+              <p className="text-muted-foreground text-center py-8">Belum ada log keamanan</p>
             ) : (
               securityLogs.slice(0, 10).map((log) => (
-                <div key={log.id} className="flex items-center justify-between p-3 border rounded-lg">
+                <div key={log.id} className="flex items-center justify-between p-3 border border-border rounded-lg">
                   <div className="flex-1">
                     <div className="flex items-center space-x-2">
                       <Badge variant={log.success ? 'default' : 'destructive'}>
                         {log.type.replace('_', ' ')}
                       </Badge>
-                      <span className="text-sm font-medium">{log.userEmail || 'Unknown'}</span>
+                      <span className="text-sm font-medium text-foreground">{log.userEmail || 'Unknown'}</span>
                     </div>
-                    <p className="text-xs text-gray-600 mt-1">
+                    <p className="text-xs text-muted-foreground mt-1">
                       IP: {log.ipAddress} • {new Date(log.timestamp).toLocaleString('id-ID')}
                     </p>
                   </div>

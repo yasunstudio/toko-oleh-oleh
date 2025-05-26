@@ -138,17 +138,18 @@ export function AdminProductCard({ product, onUpdate }: AdminProductCardProps) {
   }
 
   return (
-    <Card className="group">
+    <Card className="group bg-card text-foreground">
       <div className="relative aspect-square overflow-hidden rounded-t-lg">
         <Image
           src={getProductImageUrl()}
           alt={product.name}
           fill
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
           className="object-cover group-hover:scale-105 transition-transform duration-300"
         />
         {!product.isActive && (
-          <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-            <Badge variant="secondary" className="bg-red-500 text-white">
+          <div className="absolute inset-0 bg-black/70 flex items-center justify-center">
+            <Badge variant="destructive" className="text-destructive-foreground">
               Non-Aktif
             </Badge>
           </div>
@@ -159,7 +160,7 @@ export function AdminProductCard({ product, onUpdate }: AdminProductCardProps) {
               {product.category.name}
             </Badge>
           ) : (
-            <Badge variant="outline">
+            <Badge variant="outline" className="border-border text-muted-foreground">
               Tanpa Kategori
             </Badge>
           )}
@@ -167,11 +168,11 @@ export function AdminProductCard({ product, onUpdate }: AdminProductCardProps) {
       </div>
 
       <CardContent className="p-4">
-        <h3 className="font-semibold text-lg mb-2 line-clamp-2">
+        <h3 className="font-semibold text-lg mb-2 line-clamp-2 text-foreground">
           {product.name}
         </h3>
         
-        <p className="text-gray-600 text-sm mb-3 line-clamp-2">
+        <p className="text-muted-foreground text-sm mb-3 line-clamp-2">
           {product.description || 'Tidak ada deskripsi'}
         </p>
 
@@ -180,10 +181,10 @@ export function AdminProductCard({ product, onUpdate }: AdminProductCardProps) {
             <p className="text-xl font-bold text-primary">
               {formatPrice(product.price)}
             </p>
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-muted-foreground">
               Stok: {product.stock}
               {product.stock < 10 && (
-                <Badge variant="outline" className="ml-2 text-yellow-600 border-yellow-600">
+                <Badge variant="outline" className="ml-2 text-yellow-600 border-yellow-500 bg-yellow-500/10">
                   Rendah
                 </Badge>
               )}
@@ -191,7 +192,7 @@ export function AdminProductCard({ product, onUpdate }: AdminProductCardProps) {
           </div>
           
           <div className="flex items-center space-x-2">
-            <span className="text-sm text-gray-600">Aktif</span>
+            <span className="text-sm text-muted-foreground">Aktif</span>
             <Switch
               checked={product.isActive}
               onCheckedChange={handleToggleActive}
@@ -219,14 +220,14 @@ export function AdminProductCard({ product, onUpdate }: AdminProductCardProps) {
           
           <AlertDialog>
             <AlertDialogTrigger asChild>
-              <Button variant="outline" size="sm" className="text-red-600 hover:text-red-700">
+              <Button variant="outline" size="sm" className="text-destructive hover:text-destructive/90 border-destructive/50 hover:border-destructive/70">
                 <Trash2 className="h-4 w-4" />
               </Button>
             </AlertDialogTrigger>
-            <AlertDialogContent>
+            <AlertDialogContent className="bg-card">
               <AlertDialogHeader>
-                <AlertDialogTitle>Hapus Produk</AlertDialogTitle>
-                <AlertDialogDescription>
+                <AlertDialogTitle className="text-foreground">Hapus Produk</AlertDialogTitle>
+                <AlertDialogDescription className="text-muted-foreground">
                   Apakah Anda yakin ingin menghapus produk "{product.name}"? 
                   Tindakan ini tidak dapat dibatalkan.
                 </AlertDialogDescription>
@@ -235,7 +236,7 @@ export function AdminProductCard({ product, onUpdate }: AdminProductCardProps) {
                 <AlertDialogCancel>Batal</AlertDialogCancel>
                 <AlertDialogAction
                   onClick={handleDelete}
-                  className="bg-red-600 hover:bg-red-700"
+                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                   disabled={loading}
                 >
                   {loading ? 'Menghapus...' : 'Hapus'}

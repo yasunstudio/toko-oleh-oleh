@@ -2,10 +2,10 @@
 
 import { ProductForm } from '@/components/admin/product-form'
 import { useSession } from 'next-auth/react'
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
-import { testAuthAction } from '@/app/actions'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
 export default function NewProductPage() {
   const { data: session, status } = useSession()
@@ -24,7 +24,7 @@ export default function NewProductPage() {
   if (status === 'loading') {
     return (
       <div className="p-6 flex flex-col items-center justify-center min-h-[50vh]">
-        <p className="text-gray-600">Loading...</p>
+        <span className="text-muted-foreground">Loading...</span>
       </div>
     )
   }
@@ -33,7 +33,7 @@ export default function NewProductPage() {
   if (!session || session.user.role !== 'ADMIN') {
     return (
       <div className="p-6 flex flex-col items-center justify-center min-h-[50vh]">
-        <p className="text-red-500 mb-4">Anda tidak memiliki akses ke halaman ini.</p>
+        <span className="text-destructive mb-4">Anda tidak memiliki akses ke halaman ini.</span>
         <Button onClick={() => router.push('/admin/login')}>Login sebagai Admin</Button>
       </div>
     )
@@ -41,15 +41,20 @@ export default function NewProductPage() {
 
   return (
     <div className="p-6">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Tambah Produk Baru</h1>
-        <p className="text-gray-600">Buat produk baru untuk toko</p>
-        <p className="text-sm text-green-600 mt-1">
-          Logged in as: {session.user.name} ({session.user.role})
-        </p>
-      </div>
-
-      <ProductForm />
+      <Card className="mb-8 bg-card">
+        <CardHeader>
+          <CardTitle className="text-3xl font-bold text-foreground">Tambah Produk Baru</CardTitle>
+          <p className="text-muted-foreground">Buat produk baru untuk toko</p>
+          <p className="text-sm text-green-600 mt-1">
+            Logged in as: {session.user.name} ({session.user.role})
+          </p>
+        </CardHeader>
+      </Card>
+      <Card className="bg-card">
+        <CardContent>
+          <ProductForm />
+        </CardContent>
+      </Card>
     </div>
   )
 }

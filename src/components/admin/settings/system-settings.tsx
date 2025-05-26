@@ -139,19 +139,19 @@ export function SystemSettings() {
  }
 
  if (loading) {
-   return <div>Loading system information...</div>
+   return <div className="text-foreground">Loading system information...</div>
  }
 
  if (!systemInfo) {
-   return <div>Error loading system information</div>
+   return <div className="text-destructive">Error loading system information</div>
  }
 
  return (
    <div className="space-y-6">
      {/* System Overview */}
-     <Card>
+     <Card className="mb-6 bg-card">
        <CardHeader>
-         <CardTitle className="flex items-center">
+         <CardTitle className="text-xl font-bold text-foreground">
            <Server className="h-5 w-5 mr-2" />
            Informasi Sistem
          </CardTitle>
@@ -160,10 +160,10 @@ export function SystemSettings() {
          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
            <div className="space-y-2">
              <div className="flex items-center space-x-2">
-               <Server className="h-4 w-4 text-gray-400" />
-               <span className="text-sm font-medium">Versi Aplikasi</span>
+               <Server className="h-4 w-4 text-muted-foreground" />
+               <span className="text-sm font-medium text-foreground">Versi Aplikasi</span>
              </div>
-             <p className="text-lg font-bold">{systemInfo.version}</p>
+             <p className="text-lg font-bold text-foreground">{systemInfo.version}</p>
            </div>
 
            <div className="space-y-2">
@@ -171,25 +171,25 @@ export function SystemSettings() {
                <Badge variant={systemInfo.environment === 'production' ? 'default' : 'secondary'}>
                  {systemInfo.environment}
                </Badge>
-               <span className="text-sm font-medium">Environment</span>
+               <span className="text-sm font-medium text-foreground">Environment</span>
              </div>
-             <p className="text-sm text-gray-600">Node.js {systemInfo.nodeVersion}</p>
+             <p className="text-sm text-muted-foreground">Node.js {systemInfo.nodeVersion}</p>
            </div>
 
            <div className="space-y-2">
              <div className="flex items-center space-x-2">
-               <Cpu className="h-4 w-4 text-gray-400" />
-               <span className="text-sm font-medium">Platform</span>
+               <Cpu className="h-4 w-4 text-muted-foreground" />
+               <span className="text-sm font-medium text-foreground">Platform</span>
              </div>
-             <p className="text-lg font-bold">{systemInfo.platform}</p>
+             <p className="text-lg font-bold text-foreground">{systemInfo.platform}</p>
            </div>
 
            <div className="space-y-2">
              <div className="flex items-center space-x-2">
-               <RefreshCw className="h-4 w-4 text-gray-400" />
-               <span className="text-sm font-medium">Uptime</span>
+               <RefreshCw className="h-4 w-4 text-muted-foreground" />
+               <span className="text-sm font-medium text-foreground">Uptime</span>
              </div>
-             <p className="text-lg font-bold">{formatUptime(systemInfo.uptime)}</p>
+             <p className="text-lg font-bold text-foreground">{formatUptime(systemInfo.uptime)}</p>
            </div>
          </div>
        </CardContent>
@@ -198,21 +198,21 @@ export function SystemSettings() {
      {/* Resource Usage */}
      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
        {/* Memory Usage */}
-       <Card>
+       <Card className="bg-card">
          <CardHeader>
-           <CardTitle className="flex items-center">
+           <CardTitle className="flex items-center text-foreground">
              <MemoryStick className="h-5 w-5 mr-2" />
              Penggunaan Memory
            </CardTitle>
          </CardHeader>
          <CardContent className="space-y-4">
            <div>
-             <div className="flex justify-between text-sm mb-2">
+             <div className="flex justify-between text-sm mb-2 text-foreground">
                <span>Digunakan: {formatBytes(systemInfo.memoryUsage.used)}</span>
                <span>Total: {formatBytes(systemInfo.memoryUsage.total)}</span>
              </div>
              <Progress value={systemInfo.memoryUsage.percentage} className="h-2" />
-             <p className="text-xs text-gray-500 mt-1">
+             <p className="text-xs text-muted-foreground mt-1">
                {systemInfo.memoryUsage.percentage.toFixed(1)}% digunakan
              </p>
            </div>
@@ -220,21 +220,21 @@ export function SystemSettings() {
        </Card>
 
        {/* Disk Usage */}
-       <Card>
+       <Card className="bg-card">
          <CardHeader>
-           <CardTitle className="flex items-center">
+           <CardTitle className="flex items-center text-foreground">
              <HardDrive className="h-5 w-5 mr-2" />
              Penggunaan Disk
            </CardTitle>
          </CardHeader>
          <CardContent className="space-y-4">
            <div>
-             <div className="flex justify-between text-sm mb-2">
+             <div className="flex justify-between text-sm mb-2 text-foreground">
                <span>Digunakan: {formatBytes(systemInfo.diskUsage.used)}</span>
                <span>Total: {formatBytes(systemInfo.diskUsage.total)}</span>
              </div>
              <Progress value={systemInfo.diskUsage.percentage} className="h-2" />
-             <p className="text-xs text-gray-500 mt-1">
+             <p className="text-xs text-muted-foreground mt-1">
                {systemInfo.diskUsage.percentage.toFixed(1)}% digunakan
              </p>
            </div>
@@ -243,9 +243,9 @@ export function SystemSettings() {
      </div>
 
      {/* Database Status */}
-     <Card>
+     <Card className="bg-card">
        <CardHeader>
-         <CardTitle className="flex items-center">
+         <CardTitle className="flex items-center text-foreground">
            <Database className="h-5 w-5 mr-2" />
            Status Database
          </CardTitle>
@@ -257,9 +257,9 @@ export function SystemSettings() {
                {systemInfo.databaseStatus === 'connected' ? 'Terhubung' : 'Terputus'}
              </Badge>
              <div>
-               <p className="text-sm font-medium">MySQL Database</p>
+               <p className="text-sm font-medium text-foreground">MySQL Database</p>
                {systemInfo.lastBackup && (
-                 <p className="text-xs text-gray-500">
+                 <p className="text-xs text-muted-foreground">
                    Backup terakhir: {new Date(systemInfo.lastBackup).toLocaleString('id-ID')}
                  </p>
                )}
@@ -281,9 +281,9 @@ export function SystemSettings() {
      </Card>
 
      {/* System Actions */}
-     <Card>
+     <Card className="bg-card">
        <CardHeader>
-         <CardTitle>Aksi Sistem</CardTitle>
+         <CardTitle className="text-foreground">Aksi Sistem</CardTitle>
        </CardHeader>
        <CardContent>
          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -320,9 +320,9 @@ export function SystemSettings() {
      </Card>
 
      {/* System Health Alerts */}
-     <Card>
+     <Card className="bg-card">
        <CardHeader>
-         <CardTitle className="flex items-center">
+         <CardTitle className="flex items-center text-foreground">
            <AlertTriangle className="h-5 w-5 mr-2" />
            Peringatan Sistem
          </CardTitle>
@@ -330,27 +330,27 @@ export function SystemSettings() {
        <CardContent>
          <div className="space-y-3">
            {systemInfo.memoryUsage.percentage > 80 && (
-             <div className="flex items-center space-x-2 p-3 bg-red-50 border border-red-200 rounded-lg">
-               <AlertTriangle className="h-4 w-4 text-red-600" />
-               <span className="text-sm text-red-800">
+             <div className="flex items-center space-x-2 p-3 bg-destructive/10 border border-destructive/20 rounded-lg">
+               <AlertTriangle className="h-4 w-4 text-destructive" />
+               <span className="text-sm text-destructive">
                  Penggunaan memory tinggi ({systemInfo.memoryUsage.percentage.toFixed(1)}%)
                </span>
              </div>
            )}
 
            {systemInfo.diskUsage.percentage > 90 && (
-             <div className="flex items-center space-x-2 p-3 bg-red-50 border border-red-200 rounded-lg">
-               <AlertTriangle className="h-4 w-4 text-red-600" />
-               <span className="text-sm text-red-800">
+             <div className="flex items-center space-x-2 p-3 bg-destructive/10 border border-destructive/20 rounded-lg">
+               <AlertTriangle className="h-4 w-4 text-destructive" />
+               <span className="text-sm text-destructive">
                  Penggunaan disk hampir penuh ({systemInfo.diskUsage.percentage.toFixed(1)}%)
                </span>
              </div>
            )}
 
            {systemInfo.databaseStatus === 'disconnected' && (
-             <div className="flex items-center space-x-2 p-3 bg-red-50 border border-red-200 rounded-lg">
-               <AlertTriangle className="h-4 w-4 text-red-600" />
-               <span className="text-sm text-red-800">
+             <div className="flex items-center space-x-2 p-3 bg-destructive/10 border border-destructive/20 rounded-lg">
+               <AlertTriangle className="h-4 w-4 text-destructive" />
+               <span className="text-sm text-destructive">
                  Database tidak terhubung
                </span>
              </div>
@@ -359,9 +359,9 @@ export function SystemSettings() {
            {systemInfo.memoryUsage.percentage <= 80 && 
             systemInfo.diskUsage.percentage <= 90 && 
             systemInfo.databaseStatus === 'connected' && (
-             <div className="flex items-center space-x-2 p-3 bg-green-50 border border-green-200 rounded-lg">
+             <div className="flex items-center space-x-2 p-3 bg-green-500/10 border border-green-500/20 rounded-lg">
                <Server className="h-4 w-4 text-green-600" />
-               <span className="text-sm text-green-800">
+               <span className="text-sm text-green-600">
                  Semua sistem berjalan normal
                </span>
              </div>

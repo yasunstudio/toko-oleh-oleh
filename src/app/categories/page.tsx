@@ -44,8 +44,8 @@ export default function CategoriesPage() {
     <MainLayout>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-4">Semua Kategori</h1>
-          <p className="text-gray-600">Jelajahi berbagai kategori produk oleh-oleh khas daerah</p>
+          <h1 className="text-3xl font-bold text-foreground mb-4">Semua Kategori</h1>
+          <p className="text-muted-foreground">Jelajahi berbagai kategori produk oleh-oleh khas daerah</p>
         </div>
 
         {loading ? (
@@ -62,38 +62,39 @@ export default function CategoriesPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {categories.map((category) => (
               <Link key={category.id} href={`/products?category=${category.slug}`}>
-                <Card className="group hover:shadow-lg transition-shadow duration-300 cursor-pointer">
+                <Card className="group hover:shadow-lg transition-shadow duration-300 cursor-pointer bg-card">
                   <div className="relative aspect-video overflow-hidden rounded-t-lg">
                     <Image
                       src={category.image || '/placeholder-category.jpg'}
-                     alt={category.name}
-                     fill
-                     className="object-cover group-hover:scale-105 transition-transform duration-300"
-                   />
-                 </div>
-                 <CardContent className="p-4">
-                   <h3 className="font-semibold text-lg mb-2 group-hover:text-primary transition-colors">
-                     {category.name}
-                   </h3>
-                   <p className="text-sm text-gray-600 mb-2 line-clamp-2">
-                     {category.description || 'Berbagai produk berkualitas'}
-                   </p>
-                   <p className="text-sm text-primary font-medium">
-                     {category._count?.products || 0} produk
-                   </p>
-                 </CardContent>
-               </Card>
-             </Link>
-           ))}
-         </div>
-       )}
+                      alt={category.name}
+                      fill
+                      sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
+                      className="object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                  </div>
+                  <CardContent className="p-4">
+                    <h3 className="font-semibold text-lg mb-2 group-hover:text-primary transition-colors text-foreground">
+                      {category.name}
+                    </h3>
+                    <p className="text-sm text-muted-foreground mb-2 line-clamp-2">
+                      {category.description || 'Berbagai produk berkualitas'}
+                    </p>
+                    <p className="text-sm text-primary font-medium">
+                      {category._count?.products || 0} produk
+                    </p>
+                  </CardContent>
+                </Card>
+              </Link>
+            ))}
+          </div>
+        )}
 
-       {!loading && categories.length === 0 && (
-         <div className="text-center py-12">
-           <p className="text-gray-500 text-lg">Belum ada kategori tersedia</p>
-         </div>
-       )}
-     </div>
-   </MainLayout>
- )
+        {!loading && categories.length === 0 && (
+          <div className="text-center py-12">
+            <p className="text-muted-foreground text-lg">Belum ada kategori tersedia</p>
+          </div>
+        )}
+      </div>
+    </MainLayout>
+  )
 }

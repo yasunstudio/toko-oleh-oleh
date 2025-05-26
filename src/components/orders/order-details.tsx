@@ -20,22 +20,51 @@ export function OrderDetails({ order }: OrderDetailsProps) {
     }).format(price)
   }
 
-  const getStatusColor = (status: string) => {
+  // Helper function to safely get product image URL
+  const getProductImageUrl = (images: any[]): string => {
+    if (!images || images.length === 0) return '/placeholder.jpg'
+    
+    const firstImage = images[0]
+    if (typeof firstImage === 'string') {
+      return firstImage
+    } else if (typeof firstImage === 'object' && firstImage !== null && 'url' in firstImage) {
+      return firstImage.url
+    }
+    
+    return '/placeholder.jpg'
+  }
+
+  const getStatusColor = (status: string): string => {
     switch (status) {
       case 'PENDING':
-        return 'bg-yellow-100 text-yellow-800'
+        return 'bg-yellow-500/10 text-yellow-700 dark:text-yellow-400 border-yellow-500/40'
       case 'CONFIRMED':
-        return 'bg-blue-100 text-blue-800'
+        return 'bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/40'
       case 'PROCESSING':
-        return 'bg-purple-100 text-purple-800'
+        return 'bg-purple-500/10 text-purple-700 dark:text-purple-400 border-purple-500/40'
       case 'SHIPPED':
-        return 'bg-indigo-100 text-indigo-800'
+        return 'bg-indigo-500/10 text-indigo-700 dark:text-indigo-400 border-indigo-500/40'
       case 'DELIVERED':
-        return 'bg-green-100 text-green-800'
+        return 'bg-green-500/10 text-green-700 dark:text-green-400 border-green-500/40'
       case 'CANCELLED':
-        return 'bg-red-100 text-red-800'
+        return 'bg-red-500/10 text-red-700 dark:text-red-400 border-red-500/40'
       default:
-        return 'bg-gray-100 text-gray-800'
+        return 'bg-muted text-muted-foreground border-border'
+    }
+  }
+
+  const getPaymentStatusColor = (status: string): string => {
+    switch (status) {
+      case 'PENDING':
+        return 'bg-yellow-500/10 text-yellow-700 dark:text-yellow-400 border-yellow-500/40'
+      case 'PAID':
+        return 'bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/40'
+      case 'VERIFIED':
+        return 'bg-green-500/10 text-green-700 dark:text-green-400 border-green-500/40'
+      case 'REJECTED':
+        return 'bg-red-500/10 text-red-700 dark:text-red-400 border-red-500/40'
+      default:
+        return 'bg-muted text-muted-foreground border-border'
     }
   }
 
@@ -51,14 +80,24 @@ export function OrderDetails({ order }: OrderDetailsProps) {
     return statusMap[status] || status
   }
 
+  const getPaymentStatusText = (status: string) => {
+    const statusMap: Record<string, string> = {
+      PENDING: 'Menunggu Pembayaran',
+      PAID: 'Sudah Dibayar',
+      VERIFIED: 'Terverifikasi',
+      REJECTED: 'Ditolak'
+    }
+    return statusMap[status] || status
+  }
+
   return (
     <div className="space-y-6">
       {/* Order Info */}
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle>Detail Pesanan</CardTitle>
-            <Badge className={getStatusColor(order.status)}>
+            <CardTitle className="text-foreground">Detail Pesanan</CardTitle>
+            <Badge variant="outline" className={getStatusColor(order.status)}>
               {getStatusText(order.status)}
             </Badge>
           </div>
@@ -66,31 +105,25 @@ export function OrderDetails({ order }: OrderDetailsProps) {
         <CardContent className="space-y-4">
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div>
-              <p className="text-gray-600">Nomor Pesanan</p>
-              <p className="font-medium">{order.orderNumber}</p>
+              <p className="text-muted-foreground">Nomor Pesanan</p>
+              <p className="font-medium text-foreground">{order.orderNumber}</p>
             </div>
             <div>
-              <p className="text-gray-600">Tanggal Pesanan</p>
-              <p className="font-medium">
+              <p className="text-muted-foreground">Tanggal Pesanan</p>
+              <p className="font-medium text-foreground">
                 {format(new Date(order.createdAt), 'dd MMMM yyyy, HH:mm', { locale: id })}
               </p>
             </div>
             <div>
-              <p className="text-gray-600">Total Pembayaran</p>
+              <p className="text-muted-foreground">Total Pembayaran</p>
               <p className="font-medium text-primary text-lg">
                 {formatPrice(order.totalAmount)}
               </p>
             </div>
             <div>
-              <p className="text-gray-600">Status Pembayaran</p>
-              <Badge className={`${order.paymentStatus === 'VERIFIED' ? 'bg-green-100 text-green-800' : 
-                order.paymentStatus === 'PAID' ? 'bg-blue-100 text-blue-800' :
-                order.paymentStatus === 'REJECTED' ? 'bg-red-100 text-red-800' :
-                'bg-yellow-100 text-yellow-800'}`}>
-                {order.paymentStatus === 'PENDING' ? 'Menunggu Pembayaran' :
-                 order.paymentStatus === 'PAID' ? 'Sudah Dibayar' :
-                 order.paymentStatus === 'VERIFIED' ? 'Terverifikasi' :
-                 order.paymentStatus === 'REJECTED' ? 'Ditolak' : order.paymentStatus}
+              <p className="text-muted-foreground">Status Pembayaran</p>
+              <Badge variant="outline" className={getPaymentStatusColor(order.paymentStatus)}>
+                {getPaymentStatusText(order.paymentStatus)}
               </Badge>
             </div>
           </div>
@@ -100,34 +133,35 @@ export function OrderDetails({ order }: OrderDetailsProps) {
       {/* Order Items */}
       <Card>
         <CardHeader>
-          <CardTitle>Item Pesanan ({order.orderItems.length})</CardTitle>
+          <CardTitle className="text-foreground">Item Pesanan ({order.orderItems.length})</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
             {order.orderItems.map((item) => (
               <div key={item.id} className="flex items-center space-x-4">
                 <Image
-                  src={item.product.images[0] || '/placeholder.jpg'}
+                  src={getProductImageUrl(item.product.images)}
                   alt={item.product.name}
                   width={60}
                   height={60}
-                  className="rounded object-cover"
+                  className="rounded object-cover border border-border"
+                  style={{ width: 'auto', height: 'auto' }}
                 />
                 <div className="flex-1">
-                  <h4 className="font-medium">{item.product.name}</h4>
-                  <p className="text-sm text-gray-600">
+                  <h4 className="font-medium text-foreground">{item.product.name}</h4>
+                  <p className="text-sm text-muted-foreground">
                     {item.quantity} x {formatPrice(item.price)}
                   </p>
                 </div>
-                <p className="font-medium">
+                <p className="font-medium text-foreground">
                   {formatPrice(item.price * item.quantity)}
                 </p>
               </div>
             ))}
             
-            <Separator />
+            <Separator className="bg-border" />
             
-            <div className="flex justify-between font-bold text-lg">
+            <div className="flex justify-between font-bold text-lg text-foreground">
               <span>Total</span>
               <span className="text-primary">{formatPrice(order.totalAmount)}</span>
             </div>
@@ -138,27 +172,27 @@ export function OrderDetails({ order }: OrderDetailsProps) {
       {/* Shipping Info */}
       <Card>
         <CardHeader>
-          <CardTitle>Informasi Pengiriman</CardTitle>
+          <CardTitle className="text-foreground">Informasi Pengiriman</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
-            <p className="text-gray-600 text-sm">Penerima</p>
-            <p className="font-medium">{order.user.name}</p>
-            <p className="text-sm text-gray-600">{order.user.email}</p>
+            <p className="text-muted-foreground text-sm">Penerima</p>
+            <p className="font-medium text-foreground">{order.user.name}</p>
+            <p className="text-sm text-muted-foreground">{order.user.email}</p>
             {order.user.phone && (
-              <p className="text-sm text-gray-600">{order.user.phone}</p>
+              <p className="text-sm text-muted-foreground">{order.user.phone}</p>
             )}
           </div>
           
           <div>
-            <p className="text-gray-600 text-sm">Alamat Pengiriman</p>
-            <p className="font-medium">{order.shippingAddress}</p>
+            <p className="text-muted-foreground text-sm">Alamat Pengiriman</p>
+            <p className="font-medium text-foreground">{order.shippingAddress}</p>
           </div>
           
           {order.notes && (
             <div>
-              <p className="text-gray-600 text-sm">Catatan</p>
-              <p className="font-medium">{order.notes}</p>
+              <p className="text-muted-foreground text-sm">Catatan</p>
+              <p className="font-medium text-foreground">{order.notes}</p>
             </div>
           )}
         </CardContent>

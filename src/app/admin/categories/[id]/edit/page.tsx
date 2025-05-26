@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
 import { CategoryForm } from '@/components/admin/category-form'
 import { Skeleton } from '@/components/ui/skeleton'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
 interface Category {
   id: string
@@ -56,9 +57,17 @@ export default function EditCategoryPage() {
   if (!category) {
     return (
       <div className="p-6">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold mb-4">Kategori Tidak Ditemukan</h1>
-          <p className="text-gray-600">Kategori yang Anda cari tidak tersedia.</p>
+        <div className="flex flex-col items-center justify-center min-h-[40vh]">
+          <Card className="max-w-md w-full bg-card">
+            <CardHeader>
+              <CardTitle className="text-2xl font-bold text-foreground mb-2">
+                Kategori Tidak Ditemukan
+              </CardTitle>
+              <p className="text-muted-foreground">
+                Kategori yang Anda cari tidak tersedia.
+              </p>
+            </CardHeader>
+          </Card>
         </div>
       </div>
     )
@@ -66,12 +75,21 @@ export default function EditCategoryPage() {
 
   return (
     <div className="p-6">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Edit Kategori</h1>
-        <p className="text-gray-600">Perbarui informasi kategori {category.name}</p>
-      </div>
-
-      <CategoryForm category={category} isEdit />
+      <Card className="mb-8 bg-card">
+        <CardHeader>
+          <CardTitle className="text-3xl font-bold text-foreground">
+            Edit Kategori
+          </CardTitle>
+          <p className="text-muted-foreground">
+            Perbarui informasi kategori {category.name}
+          </p>
+        </CardHeader>
+      </Card>
+      <Card className="bg-card">
+        <CardContent>
+          <CategoryForm category={category} isEdit />
+        </CardContent>
+      </Card>
     </div>
   )
 }

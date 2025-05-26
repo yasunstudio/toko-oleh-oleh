@@ -27,7 +27,10 @@ export function ProductFilter() {
   const [selectedCategories, setSelectedCategories] = useState<string[]>(
     searchParams.get('category')?.split(',').filter(Boolean) || []
   )
-  const [priceRange, setPriceRange] = useState([0, 1000000])
+  const [priceRange, setPriceRange] = useState([
+    parseInt(searchParams.get('minPrice') || '0'),
+    parseInt(searchParams.get('maxPrice') || '1000000')
+  ])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -60,6 +63,10 @@ export function ProductFilter() {
       params.set('maxPrice', priceRange[1].toString())
     }
     
+    // Preserve existing sort parameter
+    const currentSort = new URLSearchParams(window.location.search).get('sort')
+    if (currentSort) params.set('sort', currentSort)
+    
     router.push(`/products?${params.toString()}`)
   }
 
@@ -91,20 +98,20 @@ export function ProductFilter() {
     priceRange[0] > 0 || priceRange[1] < 1000000
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Search */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">Pencarian</CardTitle>
+      <Card className="bg-card text-card-foreground">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-sm font-semibold text-foreground">Pencarian</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="pt-0">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder="Cari produk..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
+              className="pl-10 h-9 text-sm bg-background border-border focus:border-primary"
               onKeyPress={(e) => e.key === 'Enter' && applyFilters()}
             />
           </div>
@@ -112,19 +119,19 @@ export function ProductFilter() {
       </Card>
 
       {/* Categories */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">Kategori</CardTitle>
+      <Card className="bg-card text-card-foreground">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-sm font-semibold text-foreground">Kategori</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="pt-0">
           {loading ? (
             <div className="space-y-2">
               {[...Array(5)].map((_, i) => (
-                <div key={i} className="h-6 w-full bg-gray-200 rounded animate-pulse" />
+                <div key={i} className="h-5 w-full bg-muted rounded animate-pulse" />
               ))}
             </div>
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-2">
               {categories.map((category) => (
                 <div key={category.id} className="flex items-center space-x-2">
                   <Checkbox
@@ -133,13 +140,14 @@ export function ProductFilter() {
                     onCheckedChange={(checked) => 
                       handleCategoryChange(category.slug, checked as boolean)
                     }
+                    className="h-4 w-4 border-border data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground"
                   />
                   <Label 
                     htmlFor={category.slug}
-                    className="flex-1 text-sm cursor-pointer"
+                    className="flex-1 text-xs cursor-pointer text-foreground leading-relaxed"
                   >
                     {category.name}
-                    <span className="text-gray-500 ml-1">
+                    <span className="text-muted-foreground ml-1">
                       ({category._count?.products || 0})
                     </span>
                   </Label>
@@ -151,11 +159,11 @@ export function ProductFilter() {
       </Card>
 
       {/* Price Range */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">Rentang Harga</CardTitle>
+      <Card className="bg-card text-card-foreground">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-sm font-semibold text-foreground">Rentang Harga</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="pt-0 space-y-3">
           <div className="px-2">
             <Slider
               value={priceRange}
@@ -163,10 +171,10 @@ export function ProductFilter() {
               max={1000000}
               min={0}
               step={10000}
-              className="w-full"
+              className="w-full [&>span:first-child]:bg-primary"
             />
           </div>
-          <div className="flex items-center justify-between text-sm text-gray-600">
+          <div className="flex items-center justify-between text-xs text-muted-foreground">
             <span>{formatPrice(priceRange[0])}</span>
             <span>{formatPrice(priceRange[1])}</span>
           </div>
@@ -175,12 +183,12 @@ export function ProductFilter() {
 
       {/* Apply/Clear Buttons */}
       <div className="space-y-2">
-        <Button onClick={applyFilters} className="w-full">
+        <Button onClick={applyFilters} className="w-full h-9 text-sm">
           Terapkan Filter
         </Button>
         {hasActiveFilters && (
-          <Button onClick={clearFilters} variant="outline" className="w-full">
-            <X className="h-4 w-4 mr-2" />
+          <Button onClick={clearFilters} variant="outline" className="w-full h-8 text-xs">
+            <X className="h-3 w-3 mr-2" />
             Hapus Filter
           </Button>
         )}

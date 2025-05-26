@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Checkbox } from '@/components/ui/checkbox'
 import { useToast } from '@/hooks/use-toast'
 
 interface PaymentSettingsData {
@@ -97,9 +98,9 @@ export function PaymentSettings() {
 
   return (
     <div className="space-y-6">
-      <Card>
+      <Card className="bg-card">
         <CardHeader>
-          <CardTitle>Konfigurasi Pembayaran</CardTitle>
+          <CardTitle className="text-foreground">Pengaturan Pembayaran</CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
@@ -108,16 +109,16 @@ export function PaymentSettings() {
               <Label>Metode Pembayaran</Label>
               <div className="mt-2 space-y-2">
                 <div className="flex items-center space-x-2">
-                  <input type="checkbox" id="bank_transfer" defaultChecked />
-                  <Label htmlFor="bank_transfer">Transfer Bank</Label>
+                  <Checkbox id="bank_transfer" defaultChecked />
+                  <Label htmlFor="bank_transfer" className="font-normal">Transfer Bank</Label>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <input type="checkbox" id="ewallet" />
-                  <Label htmlFor="ewallet">E-Wallet (Coming Soon)</Label>
+                  <Checkbox id="ewallet" disabled />
+                  <Label htmlFor="ewallet" className="font-normal text-muted-foreground">E-Wallet (Coming Soon)</Label>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <input type="checkbox" id="cod" />
-                  <Label htmlFor="cod">Cash on Delivery (Coming Soon)</Label>
+                  <Checkbox id="cod" disabled />
+                  <Label htmlFor="cod" className="font-normal text-muted-foreground">Cash on Delivery (Coming Soon)</Label>
                 </div>
               </div>
             </div>
@@ -132,7 +133,7 @@ export function PaymentSettings() {
                   {...register('minimumOrder', { valueAsNumber: true })}
                   placeholder="10000"
                 />
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="text-xs text-muted-foreground mt-1">
                   Minimal: {formatPrice(watch('minimumOrder') || 0)}
                 </p>
               </div>
@@ -145,7 +146,7 @@ export function PaymentSettings() {
                   {...register('maximumOrder', { valueAsNumber: true })}
                   placeholder="10000000"
                 />
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="text-xs text-muted-foreground mt-1">
                   Maksimal: {formatPrice(watch('maximumOrder') || 0)}
                 </p>
               </div>
@@ -187,7 +188,7 @@ export function PaymentSettings() {
                 {...register('paymentTimeout', { valueAsNumber: true })}
                 placeholder="24"
               />
-              <p className="text-xs text-gray-500 mt-1">
+              <p className="text-xs text-muted-foreground mt-1">
                 Pesanan akan dibatalkan otomatis setelah {watch('paymentTimeout') || 24} jam
               </p>
             </div>
@@ -210,7 +211,7 @@ export function PaymentSettings() {
             <div className="flex items-center justify-between">
               <div>
                 <Label htmlFor="autoVerifyPayments">Verifikasi Otomatis</Label>
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-muted-foreground">
                   Verifikasi pembayaran secara otomatis (tidak direkomendasikan)
                 </p>
               </div>

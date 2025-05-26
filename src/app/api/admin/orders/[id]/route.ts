@@ -45,3 +45,60 @@ export async function PATCH(
     )
   }
 }
+
+export async function GET(
+  req: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const session = await getServerSession(authOptions)
+    if (!session || session.user.role !== 'ADMIN') {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const order = await prisma.order.findUnique({
+      where: { id: params.id },
+      select: {
+        id: true,
+        orderNumber: true,
+        totalAmount: true,
+        paymentStatus: true,
+        paymentProof: true,
+        bankAccount: true,
+        shippingAddress: true,
+        notes: true,
+        createdAt: true,
+        updatedAt: true,
+        user: {
+          select: {
+            name: true,
+            email: true,
+            phone: true,
+          },
+        },
+        orderItems: {
+          select: {
+            id: true,
+            quantity: true,
+            price: true,
+            product: {
+              select: {
+                name: true,
+                images: true,
+              },
+            },
+          },
+        },
+      },
+    })
+
+    if (!order) {
+      return NextResponse.json({ error: 'Order not found' }, { status: 404 })
+    }
+
+    return NextResponse.json(order)
+  } catch (error) {
+    console.error('Order detail error:', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
+}

@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { useForm } from 'react-hook-form'
+import { useForm, FieldValues } from 'react-hook-form'
 import { signIn } from 'next-auth/react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -17,7 +17,7 @@ export default function AdminLoginPage() {
   const { toast } = useToast()
   const { register, handleSubmit, formState: { errors } } = useForm()
 
-  const onSubmit = async (data: any) => {
+  const onSubmit = async (data: FieldValues) => {
     setLoading(true)
     
     try {
@@ -55,13 +55,12 @@ export default function AdminLoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4">
+    <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl">Login Admin</CardTitle>
           <CardDescription>Masuk ke dashboard admin</CardDescription>
         </CardHeader>
-        
         <CardContent>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div className="space-y-2">
@@ -73,10 +72,9 @@ export default function AdminLoginPage() {
                 {...register('email', { required: 'Email wajib diisi' })}
               />
               {errors.email && (
-                <p className="text-sm text-red-500">{errors.email.message as string}</p>
+                <p className="text-sm text-destructive">{errors.email.message as string}</p>
               )}
             </div>
-            
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
               <Input 
@@ -86,22 +84,19 @@ export default function AdminLoginPage() {
                 {...register('password', { required: 'Password wajib diisi' })}
               />
               {errors.password && (
-                <p className="text-sm text-red-500">{errors.password.message as string}</p>
+                <p className="text-sm text-destructive">{errors.password.message as string}</p>
               )}
             </div>
-            
             <Button type="submit" className="w-full" disabled={loading}>
               {loading ? 'Loading...' : 'Login'}
             </Button>
-            
-            <div className="text-center text-sm text-gray-500">
+            <div className="text-center text-sm text-muted-foreground">
               <p>Admin credentials: admin@tokooleholeh.com / admin123</p>
             </div>
           </form>
         </CardContent>
-        
         <CardFooter className="flex justify-center text-sm">
-          <Link href="/" className="text-blue-600 hover:underline">
+          <Link href="/" className="text-primary hover:underline">
             Kembali ke halaman utama
           </Link>
         </CardFooter>

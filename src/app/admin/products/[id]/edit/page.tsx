@@ -5,6 +5,7 @@ import { useParams } from 'next/navigation'
 import { ProductForm } from '@/components/admin/product-form'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Product } from '@/types'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
 export default function EditProductPage() {
   const params = useParams()
@@ -49,9 +50,17 @@ export default function EditProductPage() {
   if (!product) {
     return (
       <div className="p-6">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold mb-4">Produk Tidak Ditemukan</h1>
-          <p className="text-gray-600">Produk yang Anda cari tidak tersedia.</p>
+        <div className="flex flex-col items-center justify-center min-h-[40vh]">
+          <Card className="max-w-md w-full bg-card">
+            <CardHeader>
+              <CardTitle className="text-2xl font-bold text-foreground mb-2">
+                Produk Tidak Ditemukan
+              </CardTitle>
+              <p className="text-muted-foreground">
+                Produk yang Anda cari tidak tersedia.
+              </p>
+            </CardHeader>
+          </Card>
         </div>
       </div>
     )
@@ -59,67 +68,21 @@ export default function EditProductPage() {
 
   return (
     <div className="p-6">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Edit Produk</h1>
-        <p className="text-gray-600">Perbarui informasi produk {product.name}</p>
-      </div>
-
-      <ProductForm product={product} isEdit />
+      <Card className="mb-8 bg-card">
+        <CardHeader>
+          <CardTitle className="text-3xl font-bold text-foreground">
+            Edit Produk
+          </CardTitle>
+          <p className="text-muted-foreground">
+            Perbarui informasi produk {product.name}
+          </p>
+        </CardHeader>
+      </Card>
+      <Card className="bg-card">
+        <CardContent>
+          <ProductForm product={product} isEdit />
+        </CardContent>
+      </Card>
     </div>
   )
 }
-
-// 'use client'
-
-// import { use, useEffect, useState } from 'react'
-// import { useRouter } from 'next/navigation'
-// import { ProductForm } from '@/components/admin/product-form'
-
-// export default function EditProductPage({ params }: { params: Promise<{ id: string }> }) {
-//   const { id } = use(params)
-//   const [product, setProduct] = useState<any>(null)
-//   const [loading, setLoading] = useState(true)
-//   const [error, setError] = useState<string | null>(null)
-//   const router = useRouter()
-
-//   useEffect(() => {
-//     async function fetchProduct() {
-//       setLoading(true)
-//       setError(null)
-//       try {
-//         const res = await fetch(`/api/admin/products/${id}`)
-//         if (!res.ok) {
-//           if (res.status === 404) {
-//             setError('Produk tidak ditemukan')
-//           } else {
-//             setError('Gagal mengambil data produk')
-//           }
-//           setProduct(null)
-//         } else {
-//           const data = await res.json()
-//           setProduct(data)
-//         }
-//       } catch (err) {
-//         setError('Gagal mengambil data produk')
-//         setProduct(null)
-//       } finally {
-//         setLoading(false)
-//       }
-//     }
-//     fetchProduct()
-//   }, [id])
-
-//   if (loading) return <div className="text-center py-8">Loading...</div>
-//   if (error) return <div className="text-center py-8 text-red-500">{error}</div>
-//   if (!product) return null
-
-//   return (
-//     // <div className="max-w-2xl mx-auto py-8">
-//     <div className='p-6'>
-//       <div className="mb-8">
-//         <h1 className="text-2xl font-bold mb-4">Edit Produk</h1>
-//         <ProductForm product={product} isEdit />
-//       </div>  
-//     </div>
-//   )
-// }

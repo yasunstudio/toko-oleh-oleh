@@ -1,14 +1,24 @@
 import { CategoryForm } from '@/components/admin/category-form'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
 export default function NewCategoryPage() {
   return (
     <div className="p-6">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Tambah Kategori Baru</h1>
-        <p className="text-gray-600">Buat kategori baru untuk produk</p>
-      </div>
-
-      <CategoryForm />
+      <Card className="mb-8 bg-card">
+        <CardHeader>
+          <CardTitle className="text-3xl font-bold text-foreground">
+            Tambah Kategori Baru
+          </CardTitle>
+          <p className="text-muted-foreground">
+            Buat kategori baru untuk produk
+          </p>
+        </CardHeader>
+      </Card>
+      <Card className="bg-card">
+        <CardContent>
+          <CategoryForm />
+        </CardContent>
+      </Card>
     </div>
   )
 }

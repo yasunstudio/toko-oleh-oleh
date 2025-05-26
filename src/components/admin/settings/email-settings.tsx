@@ -143,20 +143,19 @@ export function EmailSettings() {
   return (
     <div className="space-y-6">
       {/* SMTP Configuration */}
-      <Card>
+      <Card className="bg-card">
         <CardHeader>
-          <CardTitle className="flex items-center">
-            <Mail className="h-5 w-5 mr-2" />
-            Konfigurasi SMTP
+          <CardTitle className="text-xl font-bold text-foreground">
+            Pengaturan Email
           </CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
             {/* Email Toggle */}
-            <div className="flex items-center justify-between p-4 bg-yellow-50 rounded-lg">
+            <div className="flex items-center justify-between p-4 bg-secondary text-secondary-foreground rounded-lg">
               <div>
                 <Label htmlFor="emailEnabled">Aktifkan Email</Label>
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-secondary-foreground/80">
                   Nonaktifkan untuk mematikan semua email otomatis
                 </p>
               </div>
@@ -253,7 +252,7 @@ export function EmailSettings() {
                 <Send className="h-4 w-4 mr-2" />
                 {testLoading ? 'Testing...' : 'Test Koneksi'}
               </Button>
-              <div className="flex items-center text-sm text-gray-600">
+              <div className="flex items-center text-sm text-muted-foreground">
                 <AlertTriangle className="h-4 w-4 mr-1" />
                 Pastikan menggunakan App Password untuk Gmail
               </div>
@@ -263,9 +262,9 @@ export function EmailSettings() {
       </Card>
 
       {/* Email Templates */}
-      <Card>
+      <Card className="bg-card">
         <CardHeader>
-          <CardTitle>Template Email</CardTitle>
+          <CardTitle className="text-foreground">Template Email</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-6">
@@ -274,7 +273,7 @@ export function EmailSettings() {
               <div className="flex items-center justify-between">
                 <div>
                   <Label htmlFor="welcomeEmailEnabled">Email Selamat Datang</Label>
-                  <p className="text-sm text-gray-600">
+                  <p className="text-sm text-muted-foreground">
                     Kirim email ke pengguna baru yang mendaftar
                   </p>
                 </div>
@@ -288,7 +287,7 @@ export function EmailSettings() {
               <div className="flex items-center justify-between">
                 <div>
                   <Label htmlFor="orderEmailEnabled">Email Konfirmasi Pesanan</Label>
-                  <p className="text-sm text-gray-600">
+                  <p className="text-sm text-muted-foreground">
                     Kirim email saat pesanan dibuat
                   </p>
                 </div>
@@ -302,7 +301,7 @@ export function EmailSettings() {
               <div className="flex items-center justify-between">
                 <div>
                   <Label htmlFor="paymentEmailEnabled">Email Status Pembayaran</Label>
-                  <p className="text-sm text-gray-600">
+                  <p className="text-sm text-muted-foreground">
                     Kirim email saat status pembayaran berubah
                   </p>
                 </div>
@@ -317,7 +316,7 @@ export function EmailSettings() {
             {/* Welcome Email Template */}
             {watch('welcomeEmailEnabled') && (
               <div className="space-y-4 border-t pt-6">
-                <h4 className="font-medium">Template Email Selamat Datang</h4>
+                <h4 className="font-medium text-foreground">Template Email Selamat Datang</h4>
                 <div>
                   <Label htmlFor="welcomeEmailSubject">Subject</Label>
                   <Input
@@ -331,10 +330,10 @@ export function EmailSettings() {
                   <Textarea
                     id="welcomeEmailTemplate"
                     {...register('welcomeEmailTemplate')}
-                    placeholder="Halo {`{{name}}`}, selamat datang di Toko Oleh-Oleh..."
+                    placeholder="Halo {{name}}, selamat datang di Toko Oleh-Oleh..."
                     rows={6}
                   />
-                  <p className="text-xs text-gray-500 mt-1">
+                  <p className="text-xs text-muted-foreground mt-1">
                     Gunakan {`{{name}}`}, {`{{email}}`} untuk data dinamis
                   </p>
                 </div>
@@ -344,7 +343,7 @@ export function EmailSettings() {
             {/* Order Confirmation Template */}
             {watch('orderEmailEnabled') && (
               <div className="space-y-4 border-t pt-6">
-                <h4 className="font-medium">Template Konfirmasi Pesanan</h4>
+                <h4 className="font-medium text-foreground">Template Konfirmasi Pesanan</h4>
                 <div>
                   <Label htmlFor="orderConfirmationSubject">Subject</Label>
                   <Input
@@ -358,10 +357,10 @@ export function EmailSettings() {
                   <Textarea
                     id="orderConfirmationTemplate"
                     {...register('orderConfirmationTemplate')}
-                    placeholder="Terima kasih {`{{name}}`}, pesanan #{`{{orderNumber}}`} telah diterima..."
+                    placeholder="Terima kasih {{name}}, pesanan #{{orderNumber}} telah diterima..."
                     rows={8}
                   />
-                  <p className="text-xs text-gray-500 mt-1">
+                  <p className="text-xs text-muted-foreground mt-1">
                     Gunakan {`{{name}}`}, {`{{orderNumber}}`}, {`{{totalAmount}}`} untuk data dinamis
                   </p>
                 </div>

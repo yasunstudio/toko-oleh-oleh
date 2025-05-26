@@ -45,7 +45,14 @@ export function ProductInfo({ product }: ProductInfoProps) {
   }
 
   const handleAddToCart = async (): Promise<boolean> => {
+    if (loading) return false // Prevent double clicks
+    
     if (!session) {
+      toast({
+        title: 'Login Diperlukan',
+        description: 'Silakan login terlebih dahulu untuk menambahkan produk ke keranjang',
+        variant: 'destructive'
+      })
       router.push('/auth/login')
       return false
     }
@@ -73,6 +80,16 @@ export function ProductInfo({ product }: ProductInfoProps) {
       })
 
       if (response.ok) {
+        // Validate product before adding to cart
+        if (!product || !product.id) {
+          toast({
+            title: 'Error',
+            description: 'Data produk tidak valid',
+            variant: 'destructive'
+          })
+          return false
+        }
+
         addItem(product, quantity)
 
         toast({
@@ -102,40 +119,42 @@ export function ProductInfo({ product }: ProductInfoProps) {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 text-foreground">
       {/* Category & Rating */}
       <div className="flex items-center justify-between">
         {product.category ? (
-          <Badge variant="secondary">{product.category.name}</Badge>
+          <Badge variant="secondary" className="bg-secondary text-secondary-foreground">{product.category.name}</Badge>
         ) : (
-          <Badge variant="outline">Tanpa Kategori</Badge>
+          <Badge variant="outline" className="border-border text-muted-foreground">Tanpa Kategori</Badge>
         )}
         <div className="flex items-center space-x-1">
           {[...Array(5)].map((_, i) => (
             <Star
               key={i}
-              className={`h-4 w-4 ${i < 4 ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}`}
+              className={`h-4 w-4 ${i < 4 ? 'fill-yellow-400 text-yellow-500 dark:text-yellow-400' : 'text-muted-foreground/50'}`}
             />
           ))}
-          <span className="text-sm text-gray-600 ml-2">(4.0)</span>
+          <span className="text-sm text-muted-foreground ml-2">(4.0)</span> {/* Assuming static rating */}
         </div>
       </div>
 
       {/* Product Name */}
-      <h1 className="text-3xl font-bold text-gray-900">{product.name}</h1>
+      <h1 className="text-3xl font-bold text-foreground">{product.name}</h1>
 
       {/* Price */}
       <div className="space-y-2">
         <p className="text-3xl font-bold text-primary">{formatPrice(product.price)}</p>
         {product.weight && (
-          <p className="text-sm text-gray-600">Berat: {product.weight} gram</p>
+          <p className="text-sm text-muted-foreground">Berat: {product.weight} gram</p>
         )}
       </div>
 
       {/* Stock Status */}
       <div className="flex items-center space-x-2">
-        <span className="text-sm font-medium">Stok:</span>
-        <Badge variant={product.stock > 0 ? 'default' : 'destructive'}>
+        <span className="text-sm font-medium text-foreground">Stok:</span>
+        <Badge variant={product.stock > 0 ? 'default' : 'destructive'}
+          className={`${product.stock > 0 ? 'bg-green-500/10 text-green-700 dark:text-green-400 border-green-500/40' : 'bg-destructive text-destructive-foreground' }`}
+        >
           {product.stock > 0 ? `${product.stock} tersedia` : 'Habis'}
         </Badge>
       </div>
@@ -143,22 +162,23 @@ export function ProductInfo({ product }: ProductInfoProps) {
       {/* Description */}
       <div>
         {product.description ? (
-          <p className="text-gray-700 leading-relaxed">{product.description}</p>
+          <p className="text-muted-foreground leading-relaxed">{product.description}</p>
         ) : (
-          <p className="text-gray-500 italic">Tidak ada deskripsi produk</p>
+          <p className="text-muted-foreground/70 italic">Tidak ada deskripsi produk</p>
         )}
       </div>
 
       {/* Quantity Selector */}
       {product.stock > 0 && (
         <div className="space-y-2">
-          <Label htmlFor="quantity">Jumlah</Label>
+          <Label htmlFor="quantity" className="text-foreground">Jumlah</Label>
           <div className="flex items-center space-x-2">
             <Button
               variant="outline"
-              size="sm"
+              size="icon"
               onClick={() => handleQuantityChange(quantity - 1)}
               disabled={quantity <= 1}
+              className="border-border hover:bg-accent hover:text-accent-foreground h-9 w-9"
             >
               <Minus className="h-4 w-4" />
             </Button>
@@ -169,13 +189,14 @@ export function ProductInfo({ product }: ProductInfoProps) {
               max={product.stock}
               value={quantity}
               onChange={(e) => handleQuantityChange(parseInt(e.target.value) || 1)}
-              className="w-20 text-center"
+              className="w-20 text-center bg-background border-border focus:border-primary"
             />
             <Button
               variant="outline"
-              size="sm"
+              size="icon"
               onClick={() => handleQuantityChange(quantity + 1)}
               disabled={quantity >= product.stock}
+              className="border-border hover:bg-accent hover:text-accent-foreground h-9 w-9"
             >
               <Plus className="h-4 w-4" />
             </Button>
@@ -212,9 +233,9 @@ export function ProductInfo({ product }: ProductInfoProps) {
       </div>
 
       {/* Shipping Info */}
-      <div className="border-t pt-6">
-        <div className="flex items-center space-x-2 text-sm text-gray-600">
-          <Truck className="h-4 w-4" />
+      <div className="border-t border-border pt-6">
+        <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+          <Truck className="h-4 w-4 text-primary" />
           <span>Gratis ongkir untuk pembelian di atas Rp. 100.000</span>
         </div>
       </div>

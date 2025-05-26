@@ -49,14 +49,14 @@ export default function CartPage() {
       <MainLayout>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="animate-pulse">
-            <div className="h-8 bg-gray-200 rounded w-1/4 mb-8"></div>
+            <div className="h-8 bg-muted rounded w-1/4 mb-8" />
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
               <div className="lg:col-span-2 space-y-4">
                 {[...Array(3)].map((_, i) => (
-                  <div key={i} className="h-32 bg-gray-200 rounded"></div>
+                  <div key={i} className="h-32 bg-muted rounded" />
                 ))}
               </div>
-              <div className="h-64 bg-gray-200 rounded"></div>
+              <div className="h-64 bg-muted rounded" />
             </div>
           </div>
         </div>
@@ -70,13 +70,13 @@ export default function CartPage() {
   return (
     <MainLayout>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <h1 className="text-3xl font-bold mb-8">Keranjang Belanja</h1>
+        <h1 className="text-3xl font-bold mb-8 text-foreground">Keranjang Belanja</h1>
 
         {isEmpty ? (
-          <Card>
+          <Card className="bg-card">
             <CardContent className="text-center py-12">
-              <h2 className="text-xl font-semibold mb-4">Keranjang Anda Kosong</h2>
-              <p className="text-gray-600 mb-6">
+              <h2 className="text-xl font-semibold mb-4 text-foreground">Keranjang Anda Kosong</h2>
+              <p className="text-muted-foreground mb-6">
                 Belum ada produk dalam keranjang. Mari mulai berbelanja!
               </p>
               <Button asChild>
@@ -88,9 +88,9 @@ export default function CartPage() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Cart Items */}
             <div className="lg:col-span-2">
-              <Card>
+              <Card className="bg-card">
                 <CardHeader>
-                  <CardTitle>Item dalam Keranjang ({cartItems.length})</CardTitle>
+                  <CardTitle className="text-foreground">Item dalam Keranjang ({cartItems.length})</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   {cartItems.map((item) => (

@@ -26,6 +26,11 @@ interface AdminOrderCardProps {
   onUpdate: () => void
 }
 
+type BadgeStyle = {
+  variant: 'default' | 'secondary' | 'destructive' | 'outline'
+  className?: string
+}
+
 export function AdminOrderCard({ order, onUpdate }: AdminOrderCardProps) {
   const { toast } = useToast()
   const [updating, setUpdating] = useState(false)
@@ -38,37 +43,58 @@ export function AdminOrderCard({ order, onUpdate }: AdminOrderCardProps) {
     }).format(price)
   }
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'PENDING':
-        return 'bg-yellow-100 text-yellow-800'
-      case 'CONFIRMED':
-        return 'bg-blue-100 text-blue-800'
-      case 'PROCESSING':
-        return 'bg-purple-100 text-purple-800'
-      case 'SHIPPED':
-        return 'bg-indigo-100 text-indigo-800'
-      case 'DELIVERED':
-        return 'bg-green-100 text-green-800'
-      case 'CANCELLED':
-        return 'bg-red-100 text-red-800'
-      default:
-        return 'bg-gray-100 text-gray-800'
+  // Helper function to safely get product image URL
+  const getProductImageUrl = (images: any[] | undefined | null): string => {
+    try {
+      if (!images || !Array.isArray(images) || images.length === 0) {
+        return '/placeholder.jpg'
+      }
+      
+      const firstImage = images[0]
+      if (typeof firstImage === 'string' && firstImage.trim() !== '') {
+        return firstImage
+      } else if (typeof firstImage === 'object' && firstImage !== null && 'url' in firstImage && firstImage.url) {
+        return firstImage.url
+      }
+      
+      return '/placeholder.jpg'
+    } catch (error) {
+      console.error('Error processing product image:', error, images)
+      return '/placeholder.jpg'
     }
   }
 
-  const getPaymentStatusColor = (status: string) => {
+  const getStatusBadgeStyle = (status: string): BadgeStyle => {
     switch (status) {
       case 'PENDING':
-        return 'bg-yellow-100 text-yellow-800'
-      case 'PAID':
-        return 'bg-blue-100 text-blue-800'
-      case 'VERIFIED':
-        return 'bg-green-100 text-green-800'
-      case 'REJECTED':
-        return 'bg-red-100 text-red-800'
+        return { variant: 'outline', className: 'text-yellow-700 border-yellow-400 bg-yellow-50 dark:bg-yellow-950 dark:text-yellow-400' }
+      case 'CONFIRMED':
+        return { variant: 'outline', className: 'text-blue-700 border-blue-400 bg-blue-50 dark:bg-blue-950 dark:text-blue-400' }
+      case 'PROCESSING':
+        return { variant: 'outline', className: 'text-purple-700 border-purple-400 bg-purple-50 dark:bg-purple-950 dark:text-purple-400' }
+      case 'SHIPPED':
+        return { variant: 'outline', className: 'text-indigo-700 border-indigo-400 bg-indigo-50 dark:bg-indigo-950 dark:text-indigo-400' }
+      case 'DELIVERED':
+        return { variant: 'outline', className: 'text-green-700 border-green-400 bg-green-50 dark:bg-green-950 dark:text-green-400' }
+      case 'CANCELLED':
+        return { variant: 'destructive', className: 'bg-red-50 text-red-700 border-red-200 dark:bg-red-950 dark:text-red-400' }
       default:
-        return 'bg-gray-100 text-gray-800'
+        return { variant: 'secondary' }
+    }
+  }
+
+  const getPaymentStatusBadgeStyle = (status: string): BadgeStyle => {
+    switch (status) {
+      case 'PENDING':
+        return { variant: 'outline', className: 'text-yellow-700 border-yellow-400 bg-yellow-50 dark:bg-yellow-950 dark:text-yellow-400' }
+      case 'PAID':
+        return { variant: 'outline', className: 'text-blue-700 border-blue-400 bg-blue-50 dark:bg-blue-950 dark:text-blue-400' }
+      case 'VERIFIED':
+        return { variant: 'outline', className: 'text-green-700 border-green-400 bg-green-50 dark:bg-green-950 dark:text-green-400' }
+      case 'REJECTED':
+        return { variant: 'destructive', className: 'bg-red-50 text-red-700 border-red-200 dark:bg-red-950 dark:text-red-400' }
+      default:
+        return { variant: 'secondary' }
     }
   }
 
@@ -145,152 +171,164 @@ export function AdminOrderCard({ order, onUpdate }: AdminOrderCardProps) {
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <div>
-            <h3 className="text-lg font-semibold">#{order.orderNumber}</h3>
-            <p className="text-sm text-gray-600">
-              {format(new Date(order.createdAt), 'dd MMMM yyyy, HH:mm', { locale: id })}
+    <Card className="bg-card text-foreground border-border hover:shadow-md transition-all duration-200 hover:border-primary/20 hover:-translate-y-0.5">
+      <CardContent className="p-3">
+        {/* Header Row - Ultra Compact */}
+        <div className="flex items-start justify-between mb-2">
+          <div className="flex-1">
+            <div className="flex items-center gap-2 mb-1">
+              <div className="flex items-center gap-1">
+                <div className={`w-2 h-2 rounded-full ${
+                  order.status === 'DELIVERED' ? 'bg-green-500' :
+                  order.status === 'SHIPPED' ? 'bg-indigo-500' :
+                  order.status === 'PROCESSING' ? 'bg-purple-500' :
+                  order.status === 'CONFIRMED' ? 'bg-blue-500' :
+                  order.status === 'CANCELLED' ? 'bg-red-500' :
+                  'bg-yellow-500'
+                }`}></div>
+                <h3 className="text-base font-semibold text-foreground hover:text-primary transition-colors cursor-pointer">
+                  #{order.orderNumber}
+                </h3>
+              </div>
+              <Badge {...getStatusBadgeStyle(order.status)} className="text-xs font-medium px-1.5 py-0.5">
+                {order.status}
+              </Badge>
+              <Badge {...getPaymentStatusBadgeStyle(order.paymentStatus)} className="text-xs font-medium px-1.5 py-0.5">
+                {order.paymentStatus}
+              </Badge>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              {format(new Date(order.createdAt), 'dd MMM yyyy, HH:mm', { locale: id })}
             </p>
           </div>
-          <div className="flex flex-col items-end space-y-2">
-            <Badge className={getStatusColor(order.status)}>
-              {order.status}
-            </Badge>
-            <Badge className={getPaymentStatusColor(order.paymentStatus)}>
-              {order.paymentStatus}
-            </Badge>
-          </div>
-        </div>
-      </CardHeader>
-      
-      <CardContent className="space-y-4">
-        {/* Customer Info */}
-        <div className="flex items-center space-x-4">
-          <div className="flex items-center space-x-2 flex-1">
-            <User className="h-4 w-4 text-gray-400" />
-            <div>
-              <p className="font-medium">{order.user.name}</p>
-              <p className="text-sm text-gray-600">{order.user.email}</p>
-              {order.user.phone && (
-                <p className="text-sm text-gray-600">{order.user.phone}</p>
-              )}
-            </div>
-          </div>
-          
           <div className="text-right">
-            <p className="font-bold text-lg text-primary">
+            <p className="font-bold text-base text-primary">
               {formatPrice(order.totalAmount)}
             </p>
-            <p className="text-sm text-gray-600">
+            <p className="text-xs text-muted-foreground">
               {order.orderItems.length} item
             </p>
           </div>
         </div>
 
-        {/* Order Items Preview */}
-        <div className="flex items-center space-x-4">
-          <div className="flex -space-x-2">
-            {order.orderItems.slice(0, 3).map((item, index) => (
-              <Image
-                key={index}
-                src={item.product.images[0] || '/placeholder.jpg'}
-                alt={item.product.name}
-                width={40}
-                height={40}
-                className="rounded-full border-2 border-white object-cover"
-              />
-            ))}
-            {order.orderItems.length > 3 && (
-              <div className="w-10 h-10 rounded-full bg-gray-200 border-2 border-white flex items-center justify-center text-xs font-medium">
-                +{order.orderItems.length - 3}
-              </div>
-            )}
+        {/* Customer & Items Row - More Compact */}
+        <div className="flex items-center justify-between mb-2 pb-2 border-b border-border">
+          <div className="flex items-center space-x-2 flex-1">
+            <div className="p-1 bg-primary/10 rounded-full">
+              <User className="h-3 w-3 text-primary flex-shrink-0" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="font-medium text-foreground text-xs truncate">{order.user.name}</p>
+              <p className="text-xs text-muted-foreground truncate">{order.user.email}</p>
+            </div>
           </div>
-          <button
-            onClick={() => setExpanded(!expanded)}
-            className="text-sm text-primary hover:underline"
-          >
-            {expanded ? 'Sembunyikan detail' : 'Lihat detail'}
-          </button>
+          
+          <div className="flex items-center space-x-1.5">
+            <div className="flex -space-x-0.5">
+              {order.orderItems.slice(0, 3).map((item, index) => (
+                <div key={index} className="relative group">
+                  <Image
+                    src={getProductImageUrl(item.product.images) || '/placeholder.jpg'}
+                    alt={item.product.name || 'Product'}
+                    width={24}
+                    height={24}
+                    className="rounded-full border border-background object-cover transition-all duration-200 group-hover:scale-125 group-hover:z-10 group-hover:shadow-lg"
+                    style={{ width: '24px', height: '24px' }}
+                  />
+                  <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-popover text-popover-foreground text-xs px-2 py-1 rounded shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-20">
+                    {item.product.name}
+                  </div>
+                </div>
+              ))}
+              {order.orderItems.length > 3 && (
+                <div className="w-6 h-6 rounded-full bg-muted border border-background flex items-center justify-center hover:bg-muted/80 transition-colors">
+                  <span className="text-xs font-medium text-muted-foreground">
+                    +{order.orderItems.length - 3}
+                  </span>
+                </div>
+              )}
+            </div>
+            <button
+              onClick={() => setExpanded(!expanded)}
+              className="text-xs text-primary hover:text-primary/80 hover:underline transition-colors font-medium"
+            >
+              {expanded ? 'Tutup' : 'Detail'}
+            </button>
+          </div>
         </div>
 
         {/* Expanded Details */}
         {expanded && (
-          <>
-            <Separator />
-            
+          <div className="space-y-2 mb-2">
             {/* Detailed Items */}
-            <div className="space-y-3">
-              <h4 className="font-medium">Item Pesanan:</h4>
-              {order.orderItems.map((item) => (
-                <div key={item.id} className="flex items-center space-x-3">
-                  <Image
-                    src={item.product.images[0] || '/placeholder.jpg'}
-                    alt={item.product.name}
-                    width={50}
-                    height={50}
-                    className="rounded object-cover"
-                  />
-                  <div className="flex-1">
-                    <p className="font-medium">{item.product.name}</p>
-                    <p className="text-sm text-gray-600">
-                      {item.quantity} x {formatPrice(item.price)}
+            <div className="bg-muted/30 rounded-lg p-2">
+              <h4 className="font-medium text-foreground text-xs mb-1.5">Item Pesanan:</h4>
+              <div className="space-y-1.5">
+                {order.orderItems.map((item) => (
+                  <div key={item.id} className="flex items-center space-x-2">
+                    <Image
+                      src={getProductImageUrl(item.product.images) || '/placeholder.jpg'}
+                      alt={item.product.name || 'Product'}
+                      width={32}
+                      height={32}
+                      className="rounded object-cover border border-border"
+                      style={{ width: '32px', height: '32px' }}
+                    />
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-foreground text-xs truncate">{item.product.name}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {item.quantity} x {formatPrice(item.price)}
+                      </p>
+                    </div>
+                    <p className="font-medium text-foreground text-xs">
+                      {formatPrice(item.price * item.quantity)}
                     </p>
                   </div>
-                  <p className="font-medium">
-                    {formatPrice(item.price * item.quantity)}
-                  </p>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
 
-            <Separator />
-
             {/* Shipping Address */}
-            <div className="space-y-2">
-              <div className="flex items-center space-x-2">
-                <MapPin className="h-4 w-4 text-gray-400" />
-                <h4 className="font-medium">Alamat Pengiriman:</h4>
+            <div className="bg-muted/30 rounded-lg p-2">
+              <div className="flex items-center space-x-1.5 mb-1.5">
+                <MapPin className="h-3 w-3 text-muted-foreground" />
+                <h4 className="font-medium text-foreground text-xs">Alamat Pengiriman:</h4>
               </div>
-              <p className="text-sm text-gray-700 ml-6">{order.shippingAddress}</p>
+              <p className="text-xs text-muted-foreground">{order.shippingAddress}</p>
               {order.notes && (
                 <>
-                  <h4 className="font-medium">Catatan:</h4>
-                  <p className="text-sm text-gray-700">{order.notes}</p>
+                  <h4 className="font-medium text-foreground text-xs mt-1.5 mb-1">Catatan:</h4>
+                  <p className="text-xs text-muted-foreground">{order.notes}</p>
                 </>
               )}
             </div>
 
             {/* Payment Proof */}
             {order.paymentProof && (
-              <>
-                <Separator />
-                <div className="space-y-2">
-                  <div className="flex items-center space-x-2">
-                    <CreditCard className="h-4 w-4 text-gray-400" />
-                    <h4 className="font-medium">Bukti Pembayaran:</h4>
-                  </div>
-                  <div className="relative w-48 h-32">
-                    <Image
-                      src={order.paymentProof}
-                      alt="Bukti Pembayaran"
-                      fill
-                      className="object-cover rounded border"
-                    />
-                  </div>
+              <div className="bg-muted/30 rounded-lg p-2">
+                <div className="flex items-center space-x-1.5 mb-1.5">
+                  <CreditCard className="h-3 w-3 text-muted-foreground" />
+                  <h4 className="font-medium text-foreground text-xs">Bukti Pembayaran:</h4>
                 </div>
-              </>
+                <div className="relative w-24 h-16">
+                  <Image
+                    src={order.paymentProof}
+                    alt="Bukti Pembayaran"
+                    fill
+                    sizes="(max-width: 768px) 100vw, 400px"
+                    className="object-cover rounded border border-border"
+                  />
+                </div>
+              </div>
             )}
-          </>
+          </div>
         )}
 
-        {/* Action Buttons */}
-        <div className="flex flex-wrap gap-2 pt-4">
-          <Button variant="outline" size="sm" asChild>
+        {/* Action Buttons - Ultra Compact */}
+        <div className="flex flex-wrap gap-1.5 sm:flex-nowrap">
+          <Button variant="outline" size="sm" asChild className="h-7 text-xs px-2 flex-shrink-0">
             <Link href={`/admin/orders/${order.id}`}>
-              <Eye className="h-4 w-4 mr-2" />
+              <Eye className="h-3 w-3 mr-1" />
               Detail
             </Link>
           </Button>
@@ -300,7 +338,7 @@ export function AdminOrderCard({ order, onUpdate }: AdminOrderCardProps) {
             onValueChange={handleStatusUpdate}
             disabled={updating}
           >
-            <SelectTrigger className="w-40">
+            <SelectTrigger className={`w-28 h-7 text-xs flex-shrink-0 ${updating ? 'opacity-50' : ''}`}>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -318,7 +356,7 @@ export function AdminOrderCard({ order, onUpdate }: AdminOrderCardProps) {
             onValueChange={handlePaymentStatusUpdate}
             disabled={updating}
           >
-            <SelectTrigger className="w-40">
+            <SelectTrigger className={`w-28 h-7 text-xs flex-shrink-0 ${updating ? 'opacity-50' : ''}`}>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -328,6 +366,12 @@ export function AdminOrderCard({ order, onUpdate }: AdminOrderCardProps) {
               <SelectItem value="REJECTED">Ditolak</SelectItem>
             </SelectContent>
           </Select>
+          
+          {updating && (
+            <div className="flex items-center justify-center">
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>

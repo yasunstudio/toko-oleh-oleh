@@ -15,9 +15,10 @@ import { useState } from 'react'
 
 interface ProductCardProps {
   product: Product
+  priority?: boolean // For LCP optimization on above-the-fold images
 }
 
-export function ProductCard({ product }: ProductCardProps) {
+export function ProductCard({ product, priority = false }: ProductCardProps) {
   const { toast } = useToast()
   const { data: session } = useSession()
   const router = useRouter()
@@ -58,7 +59,14 @@ export function ProductCard({ product }: ProductCardProps) {
   }
 
   const handleAddToCart = async () => {
+    if (isAddingToCart) return // Prevent double clicks
+    
     if (!session) {
+      toast({
+        title: 'Login Diperlukan',
+        description: 'Silakan login terlebih dahulu untuk menambahkan produk ke keranjang',
+        variant: 'destructive'
+      })
       router.push('/auth/login')
       return
     }
@@ -88,6 +96,16 @@ export function ProductCard({ product }: ProductCardProps) {
       })
 
       if (response.ok) {
+        // Validate product before adding to cart
+        if (!product || !product.id) {
+          toast({
+            title: 'Error',
+            description: 'Data produk tidak valid',
+            variant: 'destructive'
+          })
+          return
+        }
+
         // Format images to ensure they match the ProductImage type
         const formattedImages: ProductImage[] = Array.isArray(product.images) 
           ? product.images.map(img => {
@@ -112,17 +130,26 @@ export function ProductCard({ product }: ProductCardProps) {
         })
       } else {
         const data = await response.json()
-        toast({
-          title: 'Gagal',
-          description: data.error || 'Gagal menambahkan ke keranjang',
-          variant: 'destructive'
-        })
+        if (response.status === 401) {
+          toast({
+            title: 'Session Berakhir',
+            description: 'Silakan login kembali',
+            variant: 'destructive'
+          })
+          router.push('/auth/login')
+        } else {
+          toast({
+            title: 'Gagal',
+            description: data.error || 'Gagal menambahkan ke keranjang',
+            variant: 'destructive'
+          })
+        }
       }
     } catch (error) {
       console.error('Add to cart error:', error)
       toast({
         title: 'Error',
-        description: 'Terjadi kesalahan saat menambahkan ke keranjang',
+        description: 'Terjadi kesalahan jaringan. Silakan coba lagi.',
         variant: 'destructive'
       })
     } finally {
@@ -131,69 +158,69 @@ export function ProductCard({ product }: ProductCardProps) {
   }
 
   return (
-    <Card className="group hover:shadow-lg transition-shadow duration-300">
-      <div className="relative aspect-square overflow-hidden rounded-t-lg">
+    <Card className="group hover:shadow-lg transition-shadow duration-300 bg-card text-card-foreground">
+      <div className="relative aspect-square overflow-hidden rounded-t-lg border-b border-border">
         <Image
           src={getProductImageUrl()}
           alt={product.name}
           fill
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
           className="object-cover group-hover:scale-105 transition-transform duration-300"
+          priority={priority}
         />
         {product.stock === 0 && (
-          <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-            <Badge variant="secondary" className="bg-red-500 text-white">
+          <div className="absolute inset-0 bg-black/60 dark:bg-background/70 flex items-center justify-center">
+            <Badge variant="destructive" className="text-destructive-foreground">
               Stok Habis
             </Badge>
           </div>
         )}
       </div>
 
-      <CardContent className="p-4">
-        <div className="flex items-start justify-between mb-2">
+      <CardContent className="p-2">
+        <div className="flex items-start justify-between mb-1">
           {product.category ? (
-            <Badge variant="secondary" className="text-xs">
+            <Badge variant="secondary" className="text-xs text-secondary-foreground bg-secondary">
               {product.category.name}
             </Badge>
           ) : (
-            <Badge variant="outline" className="text-xs">
+            <Badge variant="outline" className="text-xs border-border text-muted-foreground">
               Tanpa Kategori
             </Badge>
           )}
           <div className="flex items-center">
-            <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-            <span className="text-sm text-gray-600 ml-1">4.5</span>
+            <Star className="h-3 w-3 fill-yellow-400 text-yellow-500 dark:text-yellow-400" />
+            <span className="text-xs text-muted-foreground ml-1">4.5</span>
           </div>
         </div>
 
         <Link href={`/products/${product.slug}`}>
-          <h3 className="font-semibold text-lg mb-2 hover:text-primary transition-colors line-clamp-2">
+          <h3 className="font-semibold text-xs mb-1 hover:text-primary transition-colors line-clamp-2 text-foreground">
             {product.name}
           </h3>
         </Link>
 
-        <p className="text-gray-600 text-sm mb-3 line-clamp-2">
+        <p className="text-muted-foreground text-xs mb-1 line-clamp-1">
           {product.description || 'Tidak ada deskripsi produk'}
         </p>
 
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-2xl font-bold text-primary">
-              {formatPrice(product.price)}
-            </p>
-            <p className="text-sm text-gray-500">
-              Stok: {product.stock}
-            </p>
-          </div>
+        <div className="flex flex-col">
+          <p className="text-sm font-bold text-primary mb-1">
+            {formatPrice(product.price)}
+          </p>
+          <p className="text-xs text-muted-foreground">
+            Stok: {product.stock}
+          </p>
         </div>
       </CardContent>
 
-      <CardFooter className="p-4 pt-0">
-        <div className="flex gap-2 w-full">
+      <CardFooter className="p-2 pt-0">
+        <div className="flex flex-col gap-1 w-full">
           <Button
             variant="outline"
             size="sm"
             asChild
-            className="flex-1"
+            className="text-xs h-7"
           >
             <Link href={`/products/${product.slug}`}>
               Detail
@@ -203,16 +230,16 @@ export function ProductCard({ product }: ProductCardProps) {
             size="sm"
             onClick={handleAddToCart}
             disabled={isAddingToCart || product.stock === 0}
-            className="flex-1"
+            className="text-xs h-7"
           >
             {isAddingToCart ? (
               <>
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                <Loader2 className="h-3 w-3 mr-1 animate-spin" />
                 Loading...
               </>
             ) : (
               <>
-                <ShoppingCart className="h-4 w-4 mr-2" />
+                <ShoppingCart className="h-3 w-3 mr-1" />
                 Keranjang
               </>
             )}

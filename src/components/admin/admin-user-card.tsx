@@ -141,8 +141,12 @@ export function AdminUserCard({ user, onUpdate }: AdminUserCardProps) {
     }
   }
 
-  const getRoleColor = (role: string) => {
-    return role === 'ADMIN' ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'
+  const getRoleBadgeStyle = (role: string): { variant: 'outline'; className: string } | { variant: 'secondary' } => {
+    if (role === 'ADMIN') {
+      return { variant: 'outline', className: 'text-green-600 border-green-500 bg-green-500/10 font-medium' }
+    } else {
+      return { variant: 'outline', className: 'text-blue-600 border-blue-500 bg-blue-500/10 font-medium' }
+    }
   }
 
   const getInitials = (name: string) => {
@@ -150,31 +154,31 @@ export function AdminUserCard({ user, onUpdate }: AdminUserCardProps) {
   }
 
   return (
-    <Card>
-      <CardHeader>
+    <Card className="bg-card text-foreground">
+      <CardHeader className="border-b border-border pb-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
             <Avatar className="h-12 w-12">
-              <AvatarFallback className="bg-primary text-white">
+              <AvatarFallback className="bg-primary text-primary-foreground font-medium">
                 {getInitials(user.name)}
               </AvatarFallback>
             </Avatar>
             <div>
-              <h3 className="text-lg font-semibold flex items-center">
+              <h3 className="text-lg font-semibold flex items-center text-foreground">
                 {user.name}
                 {user.role === 'ADMIN' && (
                   <Shield className="h-4 w-4 ml-2 text-green-600" />
                 )}
               </h3>
-              <p className="text-sm text-gray-600">{user.email}</p>
+              <p className="text-sm text-muted-foreground">{user.email}</p>
             </div>
           </div>
           <div className="flex items-center space-x-2">
-            <Badge className={getRoleColor(user.role)}>
+            <Badge {...getRoleBadgeStyle(user.role)}>
               {user.role === 'ADMIN' ? 'Administrator' : 'Pelanggan'}
             </Badge>
             {user._count.orders > 0 && (
-              <Badge variant="outline">
+              <Badge variant="outline" className="border-border text-muted-foreground">
                 {user._count.orders} pesanan
               </Badge>
             )}
@@ -182,46 +186,46 @@ export function AdminUserCard({ user, onUpdate }: AdminUserCardProps) {
         </div>
       </CardHeader>
       
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-4 pt-6">
         {/* User Info */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
           <div className="space-y-3">
             <div className="flex items-center space-x-2 text-sm">
-              <Mail className="h-4 w-4 text-gray-400" />
-              <span>{user.email}</span>
+              <Mail className="h-4 w-4 text-muted-foreground" />
+              <span className="text-foreground">{user.email}</span>
             </div>
             
             {user.phone && (
               <div className="flex items-center space-x-2 text-sm">
-                <Phone className="h-4 w-4 text-gray-400" />
-                <span>{user.phone}</span>
+                <Phone className="h-4 w-4 text-muted-foreground" />
+                <span className="text-foreground">{user.phone}</span>
               </div>
             )}
             
             {user.address && (
               <div className="flex items-start space-x-2 text-sm">
-                <MapPin className="h-4 w-4 text-gray-400 mt-0.5" />
-                <span className="line-clamp-2">{user.address}</span>
+                <MapPin className="h-4 w-4 text-muted-foreground mt-0.5" />
+                <span className="line-clamp-2 text-foreground">{user.address}</span>
               </div>
             )}
           </div>
           
           <div className="space-y-3">
             <div className="flex items-center space-x-2 text-sm">
-              <Calendar className="h-4 w-4 text-gray-400" />
-              <span>
+              <Calendar className="h-4 w-4 text-muted-foreground" />
+              <span className="text-foreground">
                 Bergabung {format(new Date(user.createdAt), 'dd MMMM yyyy', { locale: id })}
               </span>
             </div>
             
             <div className="flex items-center space-x-2 text-sm">
-              <ShoppingBag className="h-4 w-4 text-gray-400" />
-              <span>{user._count.orders} total pesanan</span>
+              <ShoppingBag className="h-4 w-4 text-muted-foreground" />
+              <span className="text-foreground">{user._count.orders} total pesanan</span>
             </div>
             
             <div className="flex items-center space-x-2 text-sm">
-              <User className="h-4 w-4 text-gray-400" />
-              <span>
+              <User className="h-4 w-4 text-muted-foreground" />
+              <span className="text-foreground">
                 Terakhir update {format(new Date(user.updatedAt), 'dd/MM/yyyy HH:mm', { locale: id })}
               </span>
             </div>
@@ -229,9 +233,9 @@ export function AdminUserCard({ user, onUpdate }: AdminUserCardProps) {
         </div>
 
         {/* Action Buttons */}
-        <div className="flex items-center justify-between pt-4 border-t">
+        <div className="flex items-center justify-between pt-4 border-t border-border mt-4">
           <div className="flex items-center space-x-2">
-            <span className="text-sm font-medium">Role:</span>
+            <span className="text-sm font-medium text-muted-foreground">Role:</span>
             <Select 
               value={user.role} 
               onValueChange={handleRoleUpdate}
@@ -260,21 +264,21 @@ export function AdminUserCard({ user, onUpdate }: AdminUserCardProps) {
                 <Button 
                   variant="outline" 
                   size="sm" 
-                  className="text-red-600 hover:text-red-700"
+                  className="text-destructive hover:text-destructive/90 border-destructive/50 hover:border-destructive/70"
                   disabled={user._count.orders > 0}
                 >
                   <Trash2 className="h-4 w-4 mr-2" />
                   Hapus
                 </Button>
               </AlertDialogTrigger>
-              <AlertDialogContent>
+              <AlertDialogContent className="bg-card">
                 <AlertDialogHeader>
-                  <AlertDialogTitle>Hapus Pengguna</AlertDialogTitle>
-                  <AlertDialogDescription>
+                  <AlertDialogTitle className="text-foreground">Hapus Pengguna</AlertDialogTitle>
+                  <AlertDialogDescription className="text-muted-foreground">
                     Apakah Anda yakin ingin menghapus pengguna "{user.name}"? 
                     Tindakan ini tidak dapat dibatalkan.
                     {user._count.orders > 0 && (
-                      <span className="block mt-2 text-red-600 font-medium">
+                      <span className="block mt-2 text-destructive font-medium">
                         Pengguna ini memiliki {user._count.orders} pesanan dan tidak dapat dihapus.
                       </span>
                     )}
@@ -284,7 +288,7 @@ export function AdminUserCard({ user, onUpdate }: AdminUserCardProps) {
                   <AlertDialogCancel>Batal</AlertDialogCancel>
                   <AlertDialogAction
                     onClick={handleDeleteUser}
-                    className="bg-red-600 hover:bg-red-700"
+                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                     disabled={updating || user._count.orders > 0}
                   >
                     {updating ? 'Menghapus...' : 'Hapus'}

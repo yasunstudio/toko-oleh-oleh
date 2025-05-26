@@ -53,14 +53,18 @@ interface ProductData {
   }
 }
 
-export function ProductReport() {
+interface ProductReportProps {
+  refreshTrigger?: number
+}
+
+export function ProductReport({ refreshTrigger }: ProductReportProps) {
   const [productData, setProductData] = useState<ProductData | null>(null)
   const [loading, setLoading] = useState(true)
   const [period, setPeriod] = useState('30')
 
   useEffect(() => {
     fetchProductData()
-  }, [period])
+  }, [period, refreshTrigger])
 
   const fetchProductData = async () => {
     try {

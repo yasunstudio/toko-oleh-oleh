@@ -5,6 +5,7 @@ Platform e-commerce untuk menjual oleh-oleh khas daerah Indonesia dengan sistem 
 ## ✨ Fitur Utama
 
 - 🔐 **Sistem Autentikasi** - Login/Register untuk Guest, Customer, dan Admin
+- 🎡 **Hero Carousel** - Carousel dinamis yang dikelola dari database dengan auto-play
 - 🛍️ **Katalog Produk** - Browse produk dengan filter dan pencarian
 - 🛒 **Shopping Cart** - Manajemen keranjang belanja
 - 💳 **Checkout System** - Proses pemesanan dengan upload bukti bayar
@@ -35,3 +36,4 @@ Platform e-commerce untuk menjual oleh-oleh khas daerah Indonesia dengan sistem 
 git clone <repository-url>
 cd toko-oleh-oleh
 npm run setup
+```

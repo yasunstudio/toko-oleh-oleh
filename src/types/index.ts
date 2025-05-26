@@ -31,6 +31,8 @@ export interface Product {
   isActive: boolean;
   category?: Category;
   categoryId: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface CartItem {

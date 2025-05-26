@@ -73,13 +73,13 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen flex items-center justify-center bg-background">
       <div className="max-w-md w-full space-y-8">
         <div className="text-center">
-          <h2 className="mt-6 text-3xl font-extrabold text-gray-900">
+          <h2 className="mt-6 text-3xl font-extrabold text-foreground">
             Daftar Akun Baru
           </h2>
-          <p className="mt-2 text-sm text-gray-600">
+          <p className="mt-2 text-sm text-muted-foreground">
             Sudah punya akun?{' '}
             <Link href="/auth/login" className="font-medium text-primary hover:text-primary/80">
               Masuk di sini
@@ -87,9 +87,9 @@ export default function RegisterPage() {
           </p>
         </div>
 
-        <Card>
+        <Card className="bg-card">
           <CardHeader>
-            <CardTitle>Registrasi</CardTitle>
+            <CardTitle className="text-foreground">Registrasi</CardTitle>
           </CardHeader>
           <CardContent>
             {error && (
@@ -109,6 +109,7 @@ export default function RegisterPage() {
                   value={formData.name}
                   onChange={handleChange}
                   placeholder="Nama lengkap"
+                  className="bg-background text-foreground"
                 />
               </div>
 
@@ -122,6 +123,7 @@ export default function RegisterPage() {
                   value={formData.email}
                   onChange={handleChange}
                   placeholder="nama@example.com"
+                  className="bg-background text-foreground"
                 />
               </div>
 
@@ -134,6 +136,7 @@ export default function RegisterPage() {
                   value={formData.phone}
                   onChange={handleChange}
                   placeholder="08123456789"
+                  className="bg-background text-foreground"
                 />
               </div>
 
@@ -148,6 +151,7 @@ export default function RegisterPage() {
                     value={formData.password}
                     onChange={handleChange}
                     placeholder="Password (min. 6 karakter)"
+                    className="bg-background text-foreground"
                   />
                   <Button
                     type="button"
@@ -175,6 +179,7 @@ export default function RegisterPage() {
                   value={formData.confirmPassword}
                   onChange={handleChange}
                   placeholder="Ulangi password"
+                  className="bg-background text-foreground"
                 />
               </div>
 
@@ -187,6 +192,7 @@ export default function RegisterPage() {
                   onChange={handleChange}
                   placeholder="Alamat lengkap"
                   rows={3}
+                  className="bg-background text-foreground"
                 />
               </div>
 

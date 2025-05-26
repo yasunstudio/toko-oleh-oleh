@@ -5,7 +5,7 @@ import Image from 'next/image'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from '@/components/ui/dialog'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { useToast } from '@/hooks/use-toast'
@@ -45,6 +45,11 @@ interface AdminPaymentCardProps {
   onStatsUpdate: () => void
 }
 
+type BadgeStyle = {
+  variant: 'default' | 'secondary' | 'destructive' | 'outline'
+  className?: string
+}
+
 export function AdminPaymentCard({ payment, onUpdate, onStatsUpdate }: AdminPaymentCardProps) {
   const { toast } = useToast()
   const [updating, setUpdating] = useState(false)
@@ -58,18 +63,18 @@ export function AdminPaymentCard({ payment, onUpdate, onStatsUpdate }: AdminPaym
     }).format(price)
   }
 
-  const getStatusColor = (status: string) => {
+  const getStatusBadgeStyle = (status: string): BadgeStyle => {
     switch (status) {
       case 'PENDING':
-        return 'bg-yellow-100 text-yellow-800'
+        return { variant: 'outline', className: 'text-yellow-600 border-yellow-500 bg-yellow-500/10' }
       case 'PAID':
-        return 'bg-blue-100 text-blue-800'
+        return { variant: 'outline', className: 'text-blue-600 border-blue-500 bg-blue-500/10' }
       case 'VERIFIED':
-        return 'bg-green-100 text-green-800'
+        return { variant: 'outline', className: 'text-green-600 border-green-500 bg-green-500/10' }
       case 'REJECTED':
-        return 'bg-red-100 text-red-800'
+        return { variant: 'destructive', className: 'bg-destructive/10 text-destructive' }
       default:
-        return 'bg-gray-100 text-gray-800'
+        return { variant: 'secondary' }
     }
   }
 
@@ -172,17 +177,17 @@ export function AdminPaymentCard({ payment, onUpdate, onStatsUpdate }: AdminPaym
   }
 
   return (
-    <Card>
-      <CardHeader>
+    <Card className="bg-card text-foreground">
+      <CardHeader className="border-b border-border">
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="text-lg font-semibold">#{payment.orderNumber}</h3>
-            <p className="text-sm text-gray-600">
+            <h3 className="text-lg font-semibold text-foreground">#{payment.orderNumber}</h3>
+            <p className="text-sm text-muted-foreground">
               {format(new Date(payment.createdAt), 'dd MMMM yyyy, HH:mm', { locale: id })}
             </p>
           </div>
           <div className="flex flex-col items-end space-y-2">
-            <Badge className={getStatusColor(payment.paymentStatus)}>
+            <Badge {...getStatusBadgeStyle(payment.paymentStatus)}>
               {getStatusText(payment.paymentStatus)}
             </Badge>
             <p className="text-lg font-bold text-primary">
@@ -192,14 +197,14 @@ export function AdminPaymentCard({ payment, onUpdate, onStatsUpdate }: AdminPaym
         </div>
       </CardHeader>
       
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-4 pt-6">
         {/* Customer Info */}
         <div className="flex items-center space-x-4">
           <div className="flex items-center space-x-2 flex-1">
-            <User className="h-4 w-4 text-gray-400" />
+            <User className="h-4 w-4 text-muted-foreground" />
             <div>
-              <p className="font-medium">{payment.user.name}</p>
-              <div className="flex items-center space-x-4 text-sm text-gray-600">
+              <p className="font-medium text-foreground">{payment.user.name}</p>
+              <div className="flex items-center space-x-4 text-sm text-muted-foreground">
                 <div className="flex items-center space-x-1">
                   <Mail className="h-3 w-3" />
                   <span>{payment.user.email}</span>
@@ -218,15 +223,15 @@ export function AdminPaymentCard({ payment, onUpdate, onStatsUpdate }: AdminPaym
         {/* Payment Info */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
           <div className="flex items-center space-x-2">
-            <CreditCard className="h-4 w-4 text-gray-400" />
-            <span className="text-gray-600">Rekening:</span>
-            <span className="font-medium">{payment.bankAccount || 'Tidak ada info'}</span>
+            <CreditCard className="h-4 w-4 text-muted-foreground" />
+            <span className="text-muted-foreground">Rekening:</span>
+            <span className="font-medium text-foreground">{payment.bankAccount || 'Tidak ada info'}</span>
           </div>
           
           <div className="flex items-center space-x-2">
-            <Calendar className="h-4 w-4 text-gray-400" />
-            <span className="text-gray-600">Update terakhir:</span>
-            <span className="font-medium">
+            <Calendar className="h-4 w-4 text-muted-foreground" />
+            <span className="text-muted-foreground">Update terakhir:</span>
+            <span className="font-medium text-foreground">
               {format(new Date(payment.updatedAt), 'dd/MM/yyyy HH:mm', { locale: id })}
             </span>
           </div>
@@ -235,13 +240,15 @@ export function AdminPaymentCard({ payment, onUpdate, onStatsUpdate }: AdminPaym
         {/* Payment Proof */}
         {payment.paymentProof && (
           <div className="space-y-2">
-            <h4 className="font-medium text-gray-900">Bukti Pembayaran:</h4>
+            <h4 className="font-medium text-foreground">Bukti Pembayaran:</h4>
             <div className="relative w-48 h-32">
               <Image
                 src={payment.paymentProof}
                 alt="Bukti Pembayaran"
                 fill
-                className="object-cover rounded border cursor-pointer"
+                sizes="(max-width: 768px) 100vw, 400px"
+                className="object-cover rounded border border-border cursor-pointer"
+                style={{ width: '100%', height: '100%' }}
                 onClick={() => window.open(payment.paymentProof, '_blank')}
               />
             </div>
@@ -249,7 +256,7 @@ export function AdminPaymentCard({ payment, onUpdate, onStatsUpdate }: AdminPaym
         )}
 
         {/* Action Buttons */}
-        <div className="flex gap-2 pt-4 border-t">
+        <div className="flex gap-2 pt-4 border-t border-border">
           {payment.paymentProof && (
             <Dialog>
               <DialogTrigger asChild>
@@ -258,16 +265,21 @@ export function AdminPaymentCard({ payment, onUpdate, onStatsUpdate }: AdminPaym
                   Lihat Bukti
                 </Button>
               </DialogTrigger>
-              <DialogContent className="max-w-2xl">
+              <DialogContent className="max-w-2xl bg-card">
                 <DialogHeader>
-                  <DialogTitle>Bukti Pembayaran #{payment.orderNumber}</DialogTitle>
+                  <DialogTitle className="text-foreground">Bukti Pembayaran #{payment.orderNumber}</DialogTitle>
+                  <DialogDescription className="text-muted-foreground">
+                    Lihat bukti pembayaran yang diupload oleh pelanggan untuk verifikasi
+                  </DialogDescription>
                 </DialogHeader>
                 <div className="relative w-full h-96">
                   <Image
                     src={payment.paymentProof}
                     alt="Bukti Pembayaran"
                     fill
+                    sizes="(max-width: 768px) 100vw, 800px"
                     className="object-contain"
+                    style={{ width: '100%', height: '100%' }}
                   />
                 </div>
               </DialogContent>
@@ -280,7 +292,7 @@ export function AdminPaymentCard({ payment, onUpdate, onStatsUpdate }: AdminPaym
                 size="sm" 
                 onClick={handleVerifyPayment}
                 disabled={updating}
-                className="bg-green-600 hover:bg-green-700"
+                className="bg-green-600 hover:bg-green-700 text-white"
               >
                 <Check className="h-4 w-4 mr-2" />
                 {updating ? 'Memverifikasi...' : 'Verifikasi'}
@@ -291,25 +303,29 @@ export function AdminPaymentCard({ payment, onUpdate, onStatsUpdate }: AdminPaym
                   <Button 
                     variant="outline" 
                     size="sm"
-                    className="text-red-600 hover:text-red-700 border-red-200 hover:border-red-300"
+                    className="text-destructive hover:text-destructive/90 border-destructive/50 hover:border-destructive/70"
                   >
                     <X className="h-4 w-4 mr-2" />
                     Tolak
                   </Button>
                 </DialogTrigger>
-                <DialogContent>
+                <DialogContent className="bg-card">
                   <DialogHeader>
-                    <DialogTitle>Tolak Pembayaran</DialogTitle>
+                    <DialogTitle className="text-foreground">Tolak Pembayaran</DialogTitle>
+                    <DialogDescription className="text-muted-foreground">
+                      Masukkan alasan mengapa pembayaran ini ditolak. Alasan akan dikirimkan ke pelanggan.
+                    </DialogDescription>
                   </DialogHeader>
                   <div className="space-y-4">
                     <div>
-                      <Label htmlFor="rejectReason">Alasan Penolakan</Label>
+                      <Label htmlFor="rejectReason" className="text-foreground">Alasan Penolakan</Label>
                       <Textarea
                         id="rejectReason"
                         value={rejectReason}
                         onChange={(e) => setRejectReason(e.target.value)}
                         placeholder="Masukkan alasan mengapa pembayaran ditolak..."
                         rows={4}
+                        className="bg-background text-foreground border-border"
                       />
                     </div>
                     <div className="flex justify-end gap-2">

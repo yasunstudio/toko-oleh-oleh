@@ -23,51 +23,60 @@ export function CartSummary({ items }: CartSummaryProps) {
   }
 
   const subtotal = items.reduce((sum, item) => sum + (item.product.price * item.quantity), 0)
-  const shippingCost = subtotal >= 100000 ? 0 : 15000 // Free shipping above 100k
+  // Free shipping above 100k, or if subtotal is 0 (empty cart)
+  const shippingCost = subtotal > 0 && subtotal < 100000 ? 15000 : 0
   const total = subtotal + shippingCost
 
   const handleCheckout = () => {
     setLoading(true)
-    router.push('/checkout')
+    // Simulate API call
+    setTimeout(() => {
+      router.push('/checkout')
+      // setLoading(false); // Usually setLoading(false) would be in a .finally() or after await
+    }, 1000)
   }
 
   return (
-    <Card className="sticky top-4">
+    <Card className="sticky top-4 shadow-lg">
       <CardHeader>
-        <CardTitle>Ringkasan Pesanan</CardTitle>
+        <CardTitle className="text-xl font-semibold">Ringkasan Pesanan</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         {/* Items Summary */}
-        <div className="space-y-2">
-          {items.map((item) => (
-            <div key={item.id} className="flex justify-between text-sm">
-              <span className="truncate mr-2">
-                {item.product.name} x {item.quantity}
-              </span>
-              <span className="font-medium">
-                {formatPrice(item.product.price * item.quantity)}
-              </span>
-            </div>
-          ))}
-        </div>
+        {items.length > 0 ? (
+          <div className="space-y-2 max-h-60 overflow-y-auto pr-2">
+            {items.map((item) => (
+              <div key={item.id} className="flex justify-between text-sm items-center">
+                <span className="truncate mr-2 text-foreground">
+                  {item.product.name} <span className="text-muted-foreground">x {item.quantity}</span>
+                </span>
+                <span className="font-medium text-foreground whitespace-nowrap">
+                  {formatPrice(item.product.price * item.quantity)}
+                </span>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-sm text-muted-foreground">Keranjang Anda kosong.</p>
+        )}
 
-        <Separator />
+        {items.length > 0 && <Separator />}
 
         {/* Price Breakdown */}
-        <div className="space-y-2">
-          <div className="flex justify-between">
-            <span>Subtotal</span>
-            <span>{formatPrice(subtotal)}</span>
+        <div className="space-y-1">
+          <div className="flex justify-between text-sm">
+            <span className="text-muted-foreground">Subtotal</span>
+            <span className="text-foreground">{formatPrice(subtotal)}</span>
           </div>
-          <div className="flex justify-between">
-            <span>Ongkos Kirim</span>
-            <span className={shippingCost === 0 ? 'text-green-600' : ''}>
-              {shippingCost === 0 ? 'GRATIS' : formatPrice(shippingCost)}
+          <div className="flex justify-between text-sm">
+            <span className="text-muted-foreground">Ongkos Kirim</span>
+            <span className={shippingCost === 0 ? 'text-primary font-medium' : 'text-foreground'}>
+              {shippingCost === 0 && subtotal > 0 ? 'GRATIS' : formatPrice(shippingCost)}
             </span>
           </div>
-          {subtotal < 100000 && (
-            <p className="text-xs text-gray-500">
-              Belanja Rp. {formatPrice(100000 - subtotal)} lagi untuk gratis ongkir!
+          {subtotal > 0 && subtotal < 100000 && (
+            <p className="text-xs text-muted-foreground pt-1">
+              Belanja Rp {formatPrice(100000 - subtotal)} lagi untuk gratis ongkir!
             </p>
           )}
         </div>
@@ -75,7 +84,7 @@ export function CartSummary({ items }: CartSummaryProps) {
         <Separator />
 
         <div className="flex justify-between font-bold text-lg">
-          <span>Total</span>
+          <span className="text-foreground">Total</span>
           <span className="text-primary">{formatPrice(total)}</span>
         </div>
       </CardContent>
@@ -86,7 +95,14 @@ export function CartSummary({ items }: CartSummaryProps) {
           className="w-full"
           size="lg"
         >
-          {loading ? 'Memproses...' : 'Lanjut ke Checkout'}
+          {loading ? (
+            <>
+              {/* <Loader2 className="mr-2 h-4 w-4 animate-spin" /> */}
+              Memproses...
+            </>
+          ) : (
+            'Lanjut ke Checkout'
+          )}
         </Button>
       </CardFooter>
     </Card>

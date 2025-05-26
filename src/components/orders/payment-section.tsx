@@ -102,13 +102,13 @@ export function PaymentSection({ order, onUpdate }: PaymentSectionProps) {
   const getPaymentStatusIcon = () => {
     switch (order.paymentStatus) {
       case 'VERIFIED':
-        return <CheckCircle className="h-5 w-5 text-green-600" />
+        return <CheckCircle className="h-5 w-5 text-green-500 dark:text-green-400" />
       case 'REJECTED':
-        return <XCircle className="h-5 w-5 text-red-600" />
+        return <XCircle className="h-5 w-5 text-red-500 dark:text-red-400" />
       case 'PAID':
-        return <Clock className="h-5 w-5 text-blue-600" />
-      default:
-        return <Clock className="h-5 w-5 text-yellow-600" />
+        return <Clock className="h-5 w-5 text-blue-500 dark:text-blue-400" />
+      default: // PENDING
+        return <Clock className="h-5 w-5 text-yellow-500 dark:text-yellow-400" />
     }
   }
 
@@ -118,36 +118,41 @@ export function PaymentSection({ order, onUpdate }: PaymentSectionProps) {
         return {
           title: 'Menunggu Pembayaran',
           description: 'Silakan lakukan pembayaran dan upload bukti transfer',
-          variant: 'default' as const
+          variant: 'default' as const,
+          iconColor: 'text-yellow-500 dark:text-yellow-400'
         }
       case 'PAID':
         return {
           title: 'Menunggu Verifikasi',
           description: 'Bukti pembayaran sedang diverifikasi admin',
-          variant: 'default' as const
+          variant: 'default' as const,
+          iconColor: 'text-blue-500 dark:text-blue-400'
         }
       case 'VERIFIED':
         return {
           title: 'Pembayaran Terverifikasi',
           description: 'Pembayaran Anda telah dikonfirmasi. Pesanan akan segera diproses',
-          variant: 'default' as const
+          variant: 'default' as const, // Consider a 'success' variant if available or custom styled
+          iconColor: 'text-green-500 dark:text-green-400'
         }
       case 'REJECTED':
         return {
           title: 'Pembayaran Ditolak',
           description: 'Bukti pembayaran tidak valid. Silakan upload ulang bukti yang benar',
-          variant: 'destructive' as const
+          variant: 'destructive' as const,
+          iconColor: 'text-red-500 dark:text-red-400'
         }
       default:
         return {
           title: 'Status Tidak Diketahui',
           description: 'Hubungi customer service untuk informasi lebih lanjut',
-          variant: 'default' as const
+          variant: 'default' as const,
+          iconColor: 'text-muted-foreground'
         }
     }
   }
 
-  const paymentStatus = getPaymentStatusMessage()
+  const paymentStatusInfo = getPaymentStatusMessage()
 
   return (
     <div className="space-y-6">
@@ -155,16 +160,16 @@ export function PaymentSection({ order, onUpdate }: PaymentSectionProps) {
       <Card>
         <CardHeader>
           <div className="flex items-center space-x-2">
-            {getPaymentStatusIcon()}
-            <CardTitle>Status Pembayaran</CardTitle>
+            {getPaymentStatusIcon()} 
+            <CardTitle className="text-foreground">Status Pembayaran</CardTitle>
           </div>
         </CardHeader>
         <CardContent>
-          <Alert variant={paymentStatus.variant}>
+          <Alert variant={paymentStatusInfo.variant} className={paymentStatusInfo.variant === 'default' ? `border-${paymentStatusInfo.iconColor.split('-')[1]}-500/40 dark:border-${paymentStatusInfo.iconColor.split('-')[1]}-400/40` : ''}>
             <AlertDescription>
               <div>
-                <p className="font-medium">{paymentStatus.title}</p>
-                <p className="text-sm mt-1">{paymentStatus.description}</p>
+                <p className={`font-medium ${paymentStatusInfo.variant === 'destructive' ? 'text-destructive-foreground' : 'text-foreground'}`}>{paymentStatusInfo.title}</p>
+                <p className={`text-sm mt-1 ${paymentStatusInfo.variant === 'destructive' ? 'text-destructive-foreground/80' : 'text-muted-foreground'}`}>{paymentStatusInfo.description}</p>
               </div>
             </AlertDescription>
           </Alert>
@@ -175,16 +180,16 @@ export function PaymentSection({ order, onUpdate }: PaymentSectionProps) {
       {(order.paymentStatus === 'PENDING' || order.paymentStatus === 'REJECTED') && (
         <Card>
           <CardHeader>
-            <CardTitle>Instruksi Pembayaran</CardTitle>
+            <CardTitle className="text-foreground">Instruksi Pembayaran</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-              <h4 className="font-medium text-blue-800 mb-2">Transfer ke Rekening:</h4>
-              <div className="text-sm text-blue-700">
+            <div className="bg-accent border border-border rounded-lg p-4">
+              <h4 className="font-medium text-accent-foreground mb-2">Transfer ke Rekening:</h4>
+              <div className="text-sm text-accent-foreground/80">
                 <p>Bank: BCA</p>
                 <p>No. Rekening: 1234567890</p>
                 <p>Atas Nama: Toko Oleh-Oleh</p>
-                <p className="font-bold text-lg mt-2">
+                <p className="font-bold text-lg mt-2 text-primary">
                   Jumlah: {formatPrice(order.totalAmount)}
                 </p>
               </div>
@@ -192,21 +197,21 @@ export function PaymentSection({ order, onUpdate }: PaymentSectionProps) {
 
             <div className="space-y-4">
               <div>
-                <Label htmlFor="payment-proof">Upload Bukti Pembayaran</Label>
+                <Label htmlFor="payment-proof" className="text-foreground">Upload Bukti Pembayaran</Label>
                 <Input
                   id="payment-proof"
                   type="file"
                   accept="image/*"
                   onChange={handleFileSelect}
-                  className="mt-1"
+                  className="mt-1 file:text-primary file:font-medium"
                 />
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="text-xs text-muted-foreground mt-1">
                   Format: JPG, PNG, maksimal 5MB
                 </p>
               </div>
 
               {selectedFile && (
-                <div className="text-sm text-gray-600">
+                <div className="text-sm text-muted-foreground">
                   File dipilih: {selectedFile.name}
                 </div>
               )}
@@ -228,14 +233,15 @@ export function PaymentSection({ order, onUpdate }: PaymentSectionProps) {
       {order.paymentProof && (
         <Card>
           <CardHeader>
-            <CardTitle>Bukti Pembayaran</CardTitle>
+            <CardTitle className="text-foreground">Bukti Pembayaran</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="relative aspect-video w-full max-w-sm mx-auto">
+            <div className="relative aspect-video w-full max-w-sm mx-auto border border-border rounded-lg overflow-hidden">
               <Image
                 src={order.paymentProof}
                 alt="Bukti Pembayaran"
                 fill
+                sizes="(max-width: 768px) 100vw, 500px"
                 className="object-contain rounded-lg"
               />
             </div>

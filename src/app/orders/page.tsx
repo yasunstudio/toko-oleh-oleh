@@ -47,9 +47,9 @@ export default function OrdersPage() {
       <MainLayout>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="space-y-6">
-            <Skeleton className="h-8 w-1/4" />
+            <Skeleton className="h-8 w-1/4 bg-muted" />
             {[...Array(3)].map((_, i) => (
-              <Skeleton key={i} className="h-40 w-full" />
+              <Skeleton key={i} className="h-40 w-full bg-muted" />
             ))}
           </div>
         </div>
@@ -61,17 +61,17 @@ export default function OrdersPage() {
     <MainLayout>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex items-center justify-between mb-8">
-          <h1 className="text-3xl font-bold">Pesanan Saya</h1>
+          <h1 className="text-3xl font-bold text-foreground">Pesanan Saya</h1>
           <Button asChild>
             <Link href="/products">Lanjut Belanja</Link>
           </Button>
         </div>
 
         {orders.length === 0 ? (
-          <Card>
+          <Card className="bg-card">
             <CardContent className="text-center py-12">
-              <h2 className="text-xl font-semibold mb-4">Belum Ada Pesanan</h2>
-              <p className="text-gray-600 mb-6">
+              <h2 className="text-xl font-semibold mb-4 text-foreground">Belum Ada Pesanan</h2>
+              <p className="text-muted-foreground mb-6">
                 Anda belum memiliki pesanan. Mari mulai berbelanja!
               </p>
               <Button asChild>

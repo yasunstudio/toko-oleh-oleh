@@ -1,35 +1,25 @@
-import { withAuth } from "next-auth/middleware"
+import { NextResponse } from 'next/server'
+import type { NextRequest } from 'next/server'
 
-export default withAuth(
-  function middleware(req) {
-    // Add any additional middleware logic here
-  },
-  {
-    callbacks: {
-      authorized: ({ token, req }) => {
-        // Protect admin routes
-        if (req.nextUrl.pathname.startsWith('/admin')) {
-          return token?.role === 'ADMIN'
-        }
-        
-        // Protect user-specific routes
-        if (req.nextUrl.pathname.startsWith('/orders') || 
-            req.nextUrl.pathname.startsWith('/cart') ||
-            req.nextUrl.pathname.startsWith('/checkout')) {
-          return !!token
-        }
-        
-        return true
-      },
-    },
-  }
-)
+export function middleware(request: NextRequest) {
+  console.log('🔥 Middleware executing for:', request.url)
+  
+  // Add a custom header to verify middleware is working
+  const response = NextResponse.next()
+  response.headers.set('x-middleware-test', 'working')
+  
+  return response
+}
 
 export const config = {
   matcher: [
-    '/admin/:path*',
-    '/orders/:path*',
-    '/cart/:path*',
-    '/checkout/:path*'
-  ]
+    /*
+     * Match all request paths except for the ones starting with:
+     * - api (API routes)
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     */
+    '/((?!api|_next/static|_next/image|favicon.ico).*)',
+  ],
 }

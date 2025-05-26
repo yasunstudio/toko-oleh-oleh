@@ -95,7 +95,7 @@ export function ProfileForm({ profile, onUpdate }: ProfileFormProps) {
           placeholder="Masukkan nama lengkap"
         />
         {errors.name && (
-          <p className="text-red-500 text-sm mt-1">{errors.name.message}</p>
+          <p className="text-sm text-destructive mt-1">{errors.name.message}</p>
         )}
       </div>
 
@@ -106,9 +106,9 @@ export function ProfileForm({ profile, onUpdate }: ProfileFormProps) {
           type="email"
           value={profile.email}
           disabled
-          className="bg-gray-50"
+          className="bg-muted border-border text-muted-foreground"
         />
-        <p className="text-xs text-gray-500 mt-1">
+        <p className="text-xs text-muted-foreground mt-1">
           Email tidak dapat diubah. Hubungi admin jika perlu mengubah email.
         </p>
       </div>

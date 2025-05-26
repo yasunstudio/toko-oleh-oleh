@@ -10,6 +10,7 @@ interface CartState {
   removeItem: (productId: string) => void
   updateQuantity: (productId: string, quantity: number) => void
   clearCart: () => void
+  syncCart: () => void
 }
 
 export const useCartStore = create<CartState>()(
@@ -18,8 +19,14 @@ export const useCartStore = create<CartState>()(
       // Helper function to calculate totals
       const calculateTotals = (items: CartItem[]) => {
         return {
-          totalItems: items.reduce((sum, item) => sum + item.quantity, 0),
-          totalPrice: items.reduce((sum, item) => sum + (item.product.price * item.quantity), 0)
+          totalItems: items.reduce((sum, item) => {
+            if (!item || typeof item.quantity !== 'number') return sum;
+            return sum + item.quantity;
+          }, 0),
+          totalPrice: items.reduce((sum, item) => {
+            if (!item || !item.product || typeof item.product.price !== 'number' || typeof item.quantity !== 'number') return sum;
+            return sum + (item.product.price * item.quantity);
+          }, 0)
         };
       };
       
@@ -30,7 +37,7 @@ export const useCartStore = create<CartState>()(
         
         addItem: (product, quantity = 1) => {
           const items = get().items
-          const existingItem = items.find(i => i.product.id === product.id)
+          const existingItem = items.find(i => i?.product?.id === product.id)
           
           // Format images to be compatible with CartItem
           const formattedImages: ProductImage[] = Array.isArray(product.images) 
@@ -46,7 +53,7 @@ export const useCartStore = create<CartState>()(
           
           if (existingItem) {
             const updatedItems = items.map(i =>
-              i.product.id === product.id
+              i?.product?.id === product.id
                 ? { ...i, quantity: i.quantity + quantity }
                 : i
             )
@@ -74,7 +81,7 @@ export const useCartStore = create<CartState>()(
         },
       
         removeItem: (productId) => {
-          const newItems = get().items.filter(i => i.product.id !== productId)
+          const newItems = get().items.filter(i => i?.product?.id !== productId)
           
           const { totalItems, totalPrice } = calculateTotals(newItems);
           set({ items: newItems, totalItems, totalPrice })
@@ -87,14 +94,31 @@ export const useCartStore = create<CartState>()(
           }
           
           const updatedItems = get().items.map(i =>
-            i.product.id === productId ? { ...i, quantity } : i
+            i?.product?.id === productId ? { ...i, quantity } : i
           )
           
           const { totalItems, totalPrice } = calculateTotals(updatedItems);
           set({ items: updatedItems, totalItems, totalPrice })
         },
         
-        clearCart: () => set({ items: [], totalItems: 0, totalPrice: 0 })
+        clearCart: () => set({ items: [], totalItems: 0, totalPrice: 0 }),
+        
+        syncCart: async () => {
+          const response = await fetch('/api/cart', {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          });
+        
+          if (response.ok) {
+            const serverCartItems = await response.json();
+            const { totalItems, totalPrice } = calculateTotals(serverCartItems);
+            set({ items: serverCartItems, totalItems, totalPrice });
+          } else {
+            console.error('Failed to sync cart with server');
+          }
+        },
       };
     },
     {

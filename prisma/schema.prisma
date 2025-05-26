@@ -161,6 +161,24 @@ model Setting {
   @@map("settings")
 }
 
+model Contact {
+  id          String        @id @default(cuid())
+  name        String
+  email       String
+  phone       String?
+  subject     String
+  message     String        @db.Text
+  status      ContactStatus @default(UNREAD)
+  adminReply  String?       @db.Text
+  repliedAt   DateTime?
+  repliedBy   String?       // Admin user ID who replied
+  
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  
+  @@map("contacts")
+}
+
 enum UserRole {
   ADMIN
   CUSTOMER
@@ -180,4 +198,73 @@ enum PaymentStatus {
   PAID
   VERIFIED
   REJECTED
+}
+
+enum ContactStatus {
+  UNREAD
+  READ
+  REPLIED
+  CLOSED
+}
+
+// Traffic tracking models
+model PageVisit {
+  id           String   @id @default(cuid())
+  url          String   // the page URL that was visited
+  pageTitle    String?  // page title
+  timestamp    DateTime @default(now())
+  duration     Int?     // duration in seconds
+  referrer     String?  // where the user came from
+  bounced      Boolean  @default(false) // true if the user left without visiting other pages
+  
+  visitorId    String
+  visitor      Visitor  @relation(fields: [visitorId], references: [id], onDelete: Cascade)
+
+  @@index([url])
+  @@index([timestamp])
+  @@map("page_visits")
+}
+
+model Visitor {
+  id           String     @id @default(cuid())
+  sessionId    String     @unique // unique identifier for the visitor's session
+  ipAddress    String?    // anonymized IP address
+  userAgent    String?    // browser and OS information
+  device       DeviceType @default(UNKNOWN)
+  country      String?    // country determined from IP
+  firstVisit   DateTime   @default(now())
+  lastVisit    DateTime   @default(now())
+  
+  pageVisits   PageVisit[]
+
+  @@index([sessionId])
+  @@index([device])
+  @@map("visitors")
+}
+
+enum DeviceType {
+  DESKTOP
+  MOBILE
+  TABLET
+  UNKNOWN
+}
+
+model HeroSlide {
+  id                String   @id @default(cuid())
+  title             String
+  subtitle          String?
+  description       String   @db.Text
+  backgroundImage   String?  // URL gambar background
+  backgroundColor   String?  // Warna background (hex/gradient)
+  textColor         String   @default("#ffffff") // Warna teks
+  primaryButtonText String   
+  primaryButtonLink String
+  secondaryButtonText String?
+  secondaryButtonLink String?
+  order             Int      @default(0) // Urutan slide
+  isActive          Boolean  @default(true) // Status aktif/nonaktif
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  @@map("hero_slides")
 }

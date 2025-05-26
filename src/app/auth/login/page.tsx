@@ -10,9 +10,11 @@ import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Eye, EyeOff, Loader2 } from 'lucide-react'
+import { useCartStore } from '@/store/cart-store'
 
 export default function LoginPage() {
   const router = useRouter()
+  const { syncCart } = useCartStore()
   const [formData, setFormData] = useState({
     email: '',
     password: ''
@@ -36,6 +38,8 @@ export default function LoginPage() {
       if (result?.error) {
         setError('Email atau password salah')
       } else {
+        // Sync cart data from server after successful login
+        await syncCart()
         router.push('/')
         router.refresh()
       }
@@ -54,13 +58,13 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen flex items-center justify-center bg-background">
       <div className="max-w-md w-full space-y-8">
         <div className="text-center">
-          <h2 className="mt-6 text-3xl font-extrabold text-gray-900">
+          <h2 className="mt-6 text-3xl font-extrabold text-foreground">
             Masuk ke Akun Anda
           </h2>
-          <p className="mt-2 text-sm text-gray-600">
+          <p className="mt-2 text-sm text-muted-foreground">
             Atau{' '}
             <Link href="/auth/register" className="font-medium text-primary hover:text-primary/80">
               daftar akun baru
@@ -68,9 +72,9 @@ export default function LoginPage() {
           </p>
         </div>
 
-        <Card>
+        <Card className="bg-card">
           <CardHeader>
-            <CardTitle>Login</CardTitle>
+            <CardTitle className="text-foreground">Login</CardTitle>
           </CardHeader>
           <CardContent>
             {error && (
@@ -90,6 +94,7 @@ export default function LoginPage() {
                   value={formData.email}
                   onChange={handleChange}
                   placeholder="nama@example.com"
+                  className="bg-background text-foreground"
                 />
               </div>
 
@@ -104,6 +109,7 @@ export default function LoginPage() {
                     value={formData.password}
                     onChange={handleChange}
                     placeholder="Password"
+                    className="bg-background text-foreground"
                   />
                   <Button
                     type="button"

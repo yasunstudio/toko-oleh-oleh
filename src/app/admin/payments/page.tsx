@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { AdminPaymentCard } from '@/components/admin/admin-payment-card'
 import { BankAccountManager } from '@/components/admin/bank-account-manager'
+import { AdminBreadcrumb } from '@/components/admin/admin-breadcrumb'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { 
@@ -121,21 +122,21 @@ export default function AdminPaymentsPage() {
 
   if (loading) {
     return (
-      <div className="p-6">
-        <div className="mb-8">
-          <Skeleton className="h-8 w-48 mb-2" />
-          <Skeleton className="h-4 w-96" />
+      <div className="p-3 space-y-3">
+        <div className="mb-4">
+          <Skeleton className="h-6 w-48 mb-1" />
+          <Skeleton className="h-3 w-96" />
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
           {[...Array(4)].map((_, i) => (
-            <Skeleton key={i} className="h-32" />
+            <Skeleton key={i} className="h-16" />
           ))}
         </div>
         
-        <div className="space-y-4">
+        <div className="space-y-2">
           {[...Array(5)].map((_, i) => (
-            <Skeleton key={i} className="h-40" />
+            <Skeleton key={i} className="h-24" />
           ))}
         </div>
       </div>
@@ -143,108 +144,109 @@ export default function AdminPaymentsPage() {
   }
 
   return (
-    <div className="p-6">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Manajemen Pembayaran</h1>
-        <p className="text-gray-600">Kelola pembayaran dan verifikasi transaksi</p>
+    <div className="p-3 space-y-3">
+      <AdminBreadcrumb 
+        items={[
+          { label: 'Kelola Pembayaran' }
+        ]} 
+      />
+      
+      {/* Header Section - Ultra Compact */}
+      <div className="bg-card rounded-lg border p-3">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-xl font-bold text-foreground">Manajemen Pembayaran</h1>
+            <p className="text-xs text-muted-foreground">Kelola pembayaran dan verifikasi transaksi</p>
+          </div>
+          <div className="text-xs text-muted-foreground">
+            {payments.length} total pembayaran
+          </div>
+        </div>
       </div>
+      {/* Stats Cards - Ultra Compact */}
+      {stats && (
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+          <Card className="bg-card border-border">
+            <CardContent className="p-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Revenue</p>
+                  <p className="text-lg font-bold text-green-600 mt-0.5">{formatPrice(stats.totalRevenue)}</p>
+                </div>
+                <div className="h-6 w-6 bg-green-100 rounded-full flex items-center justify-center">
+                  <DollarSign className="h-3 w-3 text-green-600" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="bg-card border-border">
+            <CardContent className="p-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Pending</p>
+                  <p className="text-lg font-bold text-yellow-600 mt-0.5">{stats.pendingPayments}</p>
+                </div>
+                <div className="h-6 w-6 bg-yellow-100 rounded-full flex items-center justify-center">
+                  <Clock className="h-3 w-3 text-yellow-600" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="bg-card border-border">
+            <CardContent className="p-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Verified</p>
+                  <p className="text-lg font-bold text-blue-600 mt-0.5">{stats.verifiedPayments}</p>
+                </div>
+                <div className="h-6 w-6 bg-blue-100 rounded-full flex items-center justify-center">
+                  <CheckCircle className="h-3 w-3 text-blue-600" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="bg-card border-border">
+            <CardContent className="p-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Monthly</p>
+                  <p className="text-lg font-bold text-purple-600 mt-0.5">{formatPrice(stats.monthlyRevenue)}</p>
+                </div>
+                <div className="h-6 w-6 bg-purple-100 rounded-full flex items-center justify-center">
+                  <TrendingUp className="h-3 w-3 text-purple-600" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
       <Tabs defaultValue="payments" className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="payments">Pembayaran</TabsTrigger>
-          <TabsTrigger value="bank-accounts">Rekening Bank</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-2 bg-muted">
+          <TabsTrigger value="payments" className="text-foreground">Pembayaran</TabsTrigger>
+          <TabsTrigger value="bank-accounts" className="text-foreground">Rekening Bank</TabsTrigger>
         </TabsList>
         
-        <TabsContent value="payments" className="space-y-6">
-          {/* Stats Cards */}
-          {stats && (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium text-gray-600 flex items-center">
-                    <DollarSign className="h-4 w-4 mr-2" />
-                    Total Pendapatan
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-green-600">
-                    {formatPrice(stats.totalRevenue)}
-                  </div>
-                  <p className="text-xs text-gray-500">Semua transaksi terverifikasi</p>
-                </CardContent>
-              </Card>
-              
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium text-gray-600 flex items-center">
-                    <Clock className="h-4 w-4 mr-2" />
-                    Menunggu Verifikasi
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-yellow-600">
-                    {stats.pendingPayments}
-                  </div>
-                  <p className="text-xs text-gray-500">Pembayaran belum diverifikasi</p>
-                </CardContent>
-              </Card>
-              
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium text-gray-600 flex items-center">
-                    <CheckCircle className="h-4 w-4 mr-2" />
-                    Terverifikasi Hari Ini
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-blue-600">
-                    {stats.verifiedPayments}
-                  </div>
-                  <p className="text-xs text-gray-500">Pembayaran hari ini</p>
-                </CardContent>
-              </Card>
-              
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium text-gray-600 flex items-center">
-                    <TrendingUp className="h-4 w-4 mr-2" />
-                    Pendapatan Bulan Ini
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-purple-600">
-                    {formatPrice(stats.monthlyRevenue)}
-                  </div>
-                  <p className="text-xs text-gray-500">Total bulan berjalan</p>
-                </CardContent>
-              </Card>
-            </div>
-          )}
-
-          {/* Filters */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <Filter className="h-5 w-5 mr-2" />
-                Filter & Pencarian
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-col md:flex-row gap-4">
-                <div className="flex-1">
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                    <Input
-                      placeholder="Cari berdasarkan nomor pesanan, nama, atau email..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      className="pl-10"
-                    />
-                  </div>
+        <TabsContent value="payments" className="space-y-3 mt-3">
+          {/* Filters - Ultra Compact Design */}
+          <Card className="bg-card border-border">
+            <CardContent className="p-3">
+              <div className="flex items-center gap-2 mb-2">
+                <Filter className="h-3 w-3 text-muted-foreground" />
+                <h3 className="font-medium text-foreground text-sm">Filter & Pencarian</h3>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
+                <div className="relative col-span-1 sm:col-span-2 md:col-span-1">
+                  <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 h-3 w-3 text-muted-foreground" />
+                  <Input
+                    placeholder="Cari nomor pesanan, nama, email..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-7 h-8 text-xs"
+                  />
                 </div>
-                
                 <Select value={statusFilter} onValueChange={setStatusFilter}>
-                  <SelectTrigger className="w-full md:w-48">
+                  <SelectTrigger className="h-8 text-xs">
                     <SelectValue placeholder="Status Pembayaran" />
                   </SelectTrigger>
                   <SelectContent>
@@ -255,9 +257,8 @@ export default function AdminPaymentsPage() {
                     <SelectItem value="REJECTED">Ditolak</SelectItem>
                   </SelectContent>
                 </Select>
-                
                 <Select value={dateFilter} onValueChange={setDateFilter}>
-                  <SelectTrigger className="w-full md:w-48">
+                  <SelectTrigger className="h-8 text-xs">
                     <SelectValue placeholder="Filter Tanggal" />
                   </SelectTrigger>
                   <SelectContent>
@@ -271,29 +272,45 @@ export default function AdminPaymentsPage() {
             </CardContent>
           </Card>
 
-          {/* Payments List */}
-          <div className="space-y-4">
+          {/* Payments List - Ultra Compact */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <h2 className="text-base font-semibold text-foreground">
+                Daftar Pembayaran ({filteredPayments.length})
+              </h2>
+            </div>
             {filteredPayments.length === 0 ? (
-              <Card>
-                <CardContent className="text-center py-12">
-                  <CreditCard className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-                  <p className="text-gray-600">Tidak ada pembayaran yang ditemukan</p>
+              <Card className="bg-card border-border">
+                <CardContent className="text-center py-6">
+                  <div className="flex flex-col items-center space-y-2">
+                    <div className="w-12 h-12 bg-muted rounded-full flex items-center justify-center">
+                      <CreditCard className="h-6 w-6 text-muted-foreground" />
+                    </div>
+                    <p className="text-sm text-muted-foreground">Tidak ada pembayaran yang ditemukan</p>
+                    <p className="text-xs text-muted-foreground">Coba ubah filter atau kata kunci pencarian</p>
+                  </div>
                 </CardContent>
               </Card>
             ) : (
-              filteredPayments.map((payment) => (
-                <AdminPaymentCard 
-                  key={payment.id} 
-                  payment={payment} 
-                  onUpdate={fetchPayments}
-                  onStatsUpdate={fetchStats}
-                />
-              ))
+              <div className="space-y-2">
+                {filteredPayments.map((payment, index) => (
+                  <div 
+                    key={payment.id} 
+                    className="animate-in fade-in-0 slide-in-from-bottom-2" 
+                    style={{ animationDelay: `${index * 50}ms`, animationFillMode: 'both' }}
+                  >
+                    <AdminPaymentCard 
+                      payment={payment} 
+                      onUpdate={fetchPayments}
+                      onStatsUpdate={fetchStats}
+                    />
+                  </div>
+                ))}
+              </div>
             )}
           </div>
         </TabsContent>
-        
-        <TabsContent value="bank-accounts" className="space-y-6">
+        <TabsContent value="bank-accounts" className="space-y-3 mt-3">
           <BankAccountManager />
         </TabsContent>
       </Tabs>

@@ -142,51 +142,54 @@ export function CategoryForm({ category, isEdit = false }: CategoryFormProps) {
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Category Info */}
-        <Card>
+        <Card className="bg-card">
           <CardHeader>
-            <CardTitle>Informasi Kategori</CardTitle>
+            <CardTitle className="text-foreground">Informasi Kategori</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <Label htmlFor="name">Nama Kategori *</Label>
+              <Label htmlFor="name" className="text-foreground">Nama Kategori *</Label>
               <Input
                 id="name"
                 {...register('name')}
                 placeholder="Masukkan nama kategori"
+                className="bg-background border-border text-foreground placeholder:text-muted-foreground"
               />
               {errors.name && (
-                <p className="text-red-500 text-sm mt-1">{errors.name.message}</p>
+                <p className="text-sm text-destructive mt-1">{errors.name.message}</p>
               )}
             </div>
 
             <div>
-              <Label htmlFor="description">Deskripsi</Label>
+              <Label htmlFor="description" className="text-foreground">Deskripsi</Label>
               <Textarea
                 id="description"
                 {...register('description')}
                 placeholder="Deskripsi kategori"
                 rows={4}
+                className="bg-background border-border text-foreground placeholder:text-muted-foreground"
               />
             </div>
           </CardContent>
         </Card>
 
         {/* Category Image */}
-        <Card>
+        <Card className="bg-card">
           <CardHeader>
-            <CardTitle>Gambar Kategori</CardTitle>
+            <CardTitle className="text-foreground">Gambar Kategori</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <Label htmlFor="image">Upload Gambar</Label>
+              <Label htmlFor="image" className="text-foreground">Upload Gambar</Label>
               <Input
                 id="image"
                 type="file"
                 accept="image/*"
                 onChange={handleImageUpload}
                 disabled={uploading}
+                className="bg-background border-border text-foreground placeholder:text-muted-foreground file:text-foreground"
               />
-              <p className="text-xs text-gray-500 mt-1">
+              <p className="text-xs text-muted-foreground mt-1">
                 Format: JPG, PNG. Maksimal 5MB
               </p>
             </div>
@@ -197,7 +200,8 @@ export function CategoryForm({ category, isEdit = false }: CategoryFormProps) {
                   src={image}
                   alt="Category image"
                   fill
-                  className="object-cover rounded border"
+                  sizes="(max-width: 768px) 100vw, 50vw"
+                  className="object-cover rounded border border-border"
                 />
                 <Button
                   type="button"
@@ -212,7 +216,7 @@ export function CategoryForm({ category, isEdit = false }: CategoryFormProps) {
             )}
 
             {uploading && (
-              <div className="text-center text-sm text-gray-600">
+              <div className="text-center text-sm text-muted-foreground">
                 Mengupload gambar...
               </div>
             )}
@@ -220,13 +224,14 @@ export function CategoryForm({ category, isEdit = false }: CategoryFormProps) {
         </Card>
       </div>
 
-      {/* Submit Buttons */}
+      {/* Submit Buttons */} 
       <div className="flex gap-4">
         <Button
           type="button"
           variant="outline"
           onClick={() => router.back()}
           disabled={loading}
+          className="border-border hover:bg-accent hover:text-accent-foreground"
         >
           Batal
         </Button>

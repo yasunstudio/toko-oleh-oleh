@@ -161,9 +161,9 @@ export function GeneralSettings() {
 
   return (
     <div className="space-y-6">
-      <Card>
+      <Card className="bg-card">
         <CardHeader>
-          <CardTitle>Informasi Situs</CardTitle>
+          <CardTitle className="text-foreground">Pengaturan Umum</CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
@@ -178,7 +178,7 @@ export function GeneralSettings() {
                     placeholder="Toko Oleh-Oleh"
                   />
                   {errors.siteName && (
-                    <p className="text-red-500 text-sm mt-1">{errors.siteName.message}</p>
+                    <p className="text-sm text-destructive mt-1">{errors.siteName.message}</p>
                   )}
                 </div>
 
@@ -200,7 +200,7 @@ export function GeneralSettings() {
                     placeholder="https://tokooleholeh.com"
                   />
                   {errors.siteUrl && (
-                    <p className="text-red-500 text-sm mt-1">{errors.siteUrl.message}</p>
+                    <p className="text-sm text-destructive mt-1">{errors.siteUrl.message}</p>
                   )}
                 </div>
               </div>
@@ -211,7 +211,7 @@ export function GeneralSettings() {
                   <Label>Logo Situs</Label>
                   <div className="mt-2">
                     {logo ? (
-                      <div className="relative w-48 h-24 border rounded-lg overflow-hidden">
+                      <div className="relative w-48 h-24 border border-border rounded-lg overflow-hidden">
                         <Image
                           src={logo}
                           alt="Site Logo"
@@ -229,10 +229,10 @@ export function GeneralSettings() {
                         </Button>
                       </div>
                     ) : (
-                      <div className="w-48 h-24 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center">
+                      <div className="w-48 h-24 border-2 border-dashed border-border rounded-lg flex items-center justify-center">
                         <div className="text-center">
-                          <Upload className="h-8 w-8 text-gray-400 mx-auto mb-2" />
-                          <p className="text-sm text-gray-600">Upload Logo</p>
+                          <Upload className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
+                          <p className="text-sm text-muted-foreground">Upload Logo</p>
                         </div>
                       </div>
                     )}
@@ -244,7 +244,7 @@ export function GeneralSettings() {
                     disabled={logoUploading}
                     className="mt-2"
                   />
-                  <p className="text-xs text-gray-500 mt-1">
+                  <p className="text-xs text-muted-foreground mt-1">
                     Format: PNG, JPG. Maksimal 2MB. Ukuran optimal: 200x100px
                   </p>
                 </div>
@@ -252,8 +252,8 @@ export function GeneralSettings() {
             </div>
 
             {/* Contact Information */}
-            <div className="border-t pt-6">
-              <h3 className="text-lg font-medium mb-4">Informasi Kontak</h3>
+            <div className="border-t border-border pt-6">
+              <h3 className="text-lg font-medium text-foreground mb-4">Informasi Kontak</h3>
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="contactEmail">Email Kontak *</Label>
@@ -264,7 +264,7 @@ export function GeneralSettings() {
                     placeholder="info@tokooleholeh.com"
                   />
                   {errors.contactEmail && (
-                    <p className="text-red-500 text-sm mt-1">{errors.contactEmail.message}</p>
+                    <p className="text-sm text-destructive mt-1">{errors.contactEmail.message}</p>
                   )}
                 </div>
 
@@ -290,13 +290,13 @@ export function GeneralSettings() {
             </div>
 
             {/* Site Options */}
-            <div className="border-t pt-6">
-              <h3 className="text-lg font-medium mb-4">Opsi Situs</h3>
+            <div className="border-t border-border pt-6">
+              <h3 className="text-lg font-medium text-foreground mb-4">Opsi Situs</h3>
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div>
                     <Label htmlFor="maintenanceMode">Mode Maintenance</Label>
-                    <p className="text-sm text-gray-600">
+                    <p className="text-sm text-muted-foreground">
                       Nonaktifkan situs untuk maintenance
                     </p>
                   </div>
@@ -310,7 +310,7 @@ export function GeneralSettings() {
                 <div className="flex items-center justify-between">
                   <div>
                     <Label htmlFor="allowRegistration">Izinkan Registrasi</Label>
-                    <p className="text-sm text-gray-600">
+                    <p className="text-sm text-muted-foreground">
                       Biarkan pengguna baru mendaftar
                     </p>
                   </div>
@@ -324,7 +324,7 @@ export function GeneralSettings() {
                 <div className="flex items-center justify-between">
                   <div>
                     <Label htmlFor="requireEmailVerification">Verifikasi Email</Label>
-                    <p className="text-sm text-gray-600">
+                    <p className="text-sm text-muted-foreground">
                       Wajibkan verifikasi email untuk akun baru
                     </p>
                   </div>
