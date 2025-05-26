@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { MainLayout } from '@/components/layout/main-layout'
 import { ProductCard } from '@/components/product/product-card'
@@ -22,7 +22,7 @@ interface ProductsResponse {
   }
 }
 
-export default function ProductsPage() {
+function ProductsContent() {
   const searchParams = useSearchParams()
   const [data, setData] = useState<ProductsResponse | null>(null)
   const [loading, setLoading] = useState(true)
@@ -254,5 +254,25 @@ export default function ProductsPage() {
         </div>
       </div>
     </MainLayout>
+  )
+}
+
+export default function ProductsPage() {
+  return (
+    <Suspense fallback={
+      <MainLayout>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {[...Array(8)].map((_, i) => (
+                <Skeleton key={i} className="h-80 w-full" />
+              ))}
+            </div>
+          </div>
+        </div>
+      </MainLayout>
+    }>
+      <ProductsContent />
+    </Suspense>
   )
 }

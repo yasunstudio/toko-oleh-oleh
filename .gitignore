@@ -47,6 +47,10 @@ next-env.d.ts
 /tmp/
 /temp/
 
+# Data exports (contain sensitive information and can be regenerated)
+/csv-exports/
+/data-exports/
+
 # logs
 logs
 *.log

@@ -21,29 +21,40 @@ export default function AdminLoginPage() {
     setLoading(true)
     
     try {
+      console.log('🔐 Attempting signin with:', { email: data.email, passwordLength: data.password?.length })
+      
       const result = await signIn('credentials', {
         redirect: false,
         email: data.email,
         password: data.password
       })
       
-      console.log('Sign in result:', result)
+      console.log('📊 Sign in result:', result)
       
       if (result?.error) {
+        console.log('❌ Sign in error:', result.error)
         toast({
           title: 'Login gagal',
           description: 'Email atau password salah',
           variant: 'destructive'
         })
-      } else {
+      } else if (result?.ok) {
+        console.log('✅ Sign in successful')
         toast({
           title: 'Login berhasil',
           description: 'Redirecting to admin dashboard...'
         })
         router.push('/admin')
+      } else {
+        console.log('⚠️ Unexpected result:', result)
+        toast({
+          title: 'Login gagal',
+          description: 'Terjadi kesalahan yang tidak diketahui',
+          variant: 'destructive'
+        })
       }
     } catch (error) {
-      console.error('Login error:', error)
+      console.error('💥 Login error:', error)
       toast({
         title: 'Login error',
         description: 'Terjadi kesalahan saat login',
