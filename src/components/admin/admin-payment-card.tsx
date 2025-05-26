@@ -17,8 +17,7 @@ import {
   Mail, 
   Phone, 
   Calendar,
-  CreditCard,
-  DollarSign
+  CreditCard
 } from 'lucide-react'
 import { format } from 'date-fns'
 import { id } from 'date-fns/locale'
@@ -114,7 +113,7 @@ export function AdminPaymentCard({ payment, onUpdate, onStatsUpdate }: AdminPaym
           variant: 'destructive'
         })
       }
-    } catch (error) {
+    } catch {
       toast({
         title: 'Error',
         description: 'Terjadi kesalahan',
@@ -165,7 +164,7 @@ export function AdminPaymentCard({ payment, onUpdate, onStatsUpdate }: AdminPaym
           variant: 'destructive'
         })
       }
-    } catch (error) {
+    } catch {
       toast({
         title: 'Error',
         description: 'Terjadi kesalahan',

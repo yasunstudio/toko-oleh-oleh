@@ -68,13 +68,19 @@ export async function POST(req: NextRequest) {
         price: parseInt(price),
         stock: parseInt(stock),
         categoryId,
-        images,
         weight: weight ? parseInt(weight) : null,
         slug: finalSlug,
-        isActive: isActive ?? true
+        isActive: isActive ?? true,
+        // Create images as related records
+        images: {
+          create: images.map((url: string) => ({
+            url
+          }))
+        }
       },
       include: {
-        category: true
+        category: true,
+        images: true
       }
     })
 

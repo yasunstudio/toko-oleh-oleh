@@ -5,7 +5,7 @@ import { prisma } from '@/lib/db'
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions)
@@ -17,8 +17,9 @@ export async function GET(
       )
     }
 
+    const { id } = await params;
     const product = await prisma.product.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         category: true,
         images: true
@@ -45,7 +46,7 @@ export async function GET(
 
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions)
@@ -60,20 +61,46 @@ export async function PUT(
     const body = await req.json()
     const { name, description, price, stock, categoryId, images, weight, isActive } = body
 
+    // Handle images separately - first get existing images
+    const { id } = await params;
+    const existingProduct = await prisma.product.findUnique({
+      where: { id },
+      include: { images: true }
+    })
+
+    if (!existingProduct) {
+      return NextResponse.json(
+        { error: 'Produk tidak ditemukan' },
+        { status: 404 }
+      )
+    }
+
+    // Delete all existing images
+    await prisma.productImage.deleteMany({
+      where: { productId: id }
+    })
+
+    // Update product with new data
     const product = await prisma.product.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         name,
         description,
         price: parseInt(price),
         stock: parseInt(stock),
         categoryId,
-        images,
         weight: weight ? parseInt(weight) : null,
-        isActive
+        isActive,
+        // Create new images
+        images: {
+          create: images.map((url: string) => ({
+            url
+          }))
+        }
       },
       include: {
-        category: true
+        category: true,
+        images: true
       }
     })
 
@@ -90,7 +117,7 @@ export async function PUT(
 
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions)
@@ -104,8 +131,9 @@ export async function PATCH(
 
     const body = await req.json()
     
+    const { id } = await params;
     const product = await prisma.product.update({
-      where: { id: params.id },
+      where: { id },
       data: body,
       include: {
         category: true
@@ -125,7 +153,7 @@ export async function PATCH(
 
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions)
@@ -137,9 +165,10 @@ export async function DELETE(
       )
     }
 
+    const { id } = await params;
     // Check if product is used in any orders
     const orderCount = await prisma.orderItem.count({
-      where: { productId: params.id }
+      where: { productId: id }
     })
 
     if (orderCount > 0) {
@@ -151,13 +180,13 @@ export async function DELETE(
 
     // Delete cart items first
     await prisma.cartItem.deleteMany({
-      where: { productId: params.id }
-    })
+      where: { productId: id }
+    });
 
     // Delete product
     await prisma.product.delete({
-      where: { id: params.id }
-    })
+      where: { id }
+    });
 
     return NextResponse.json({ message: 'Produk berhasil dihapus' })
 

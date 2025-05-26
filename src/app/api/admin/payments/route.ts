@@ -52,7 +52,7 @@ export async function GET() {
             if (bankAccount) {
               formattedBankAccount = `${bankAccount.bankName} - ${bankAccount.accountNumber} (${bankAccount.accountName})`
             }
-          } catch (error) {
+          } catch {
             // If bank account not found, keep original value
             console.warn(`Bank account not found for ID: ${payment.bankAccount}`)
           }

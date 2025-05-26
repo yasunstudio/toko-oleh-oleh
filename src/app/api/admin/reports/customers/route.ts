@@ -194,21 +194,6 @@ export async function GET(request: NextRequest) {
     const retentionRate = customersWhoMadeOrders > 0 ? 
       (customersWithMultipleOrders / customersWhoMadeOrders) * 100 : 0
 
-    // Previous period retention for comparison
-    const previousCustomersWithOrders = await prisma.user.count({
-      where: {
-        role: 'CUSTOMER',
-        orders: {
-          some: {
-            createdAt: {
-              gte: previousStartDate,
-              lt: startDate
-            }
-          }
-        }
-      }
-    })
-
     // Calculate percentage changes
     const newCustomersChange = previousNewCustomers > 0 ? 
       ((newCustomers - previousNewCustomers) / previousNewCustomers) * 100 : 0

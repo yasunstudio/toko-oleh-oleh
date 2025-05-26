@@ -2,6 +2,20 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/db'
+import { PaymentStatus } from '@prisma/client'
+
+interface StatusDistributionItem {
+  paymentStatus: PaymentStatus
+  _count: {
+    paymentStatus: number
+  }
+}
+
+interface PaymentStatusDistribution {
+  status: PaymentStatus
+  count: number
+  percentage: number
+}
 
 export async function GET(request: NextRequest) {
   try {
@@ -47,9 +61,9 @@ export async function GET(request: NextRequest) {
       }
     })
 
-    const totalPayments = statusDistribution.reduce((sum: number, item: any) => sum + item._count.paymentStatus, 0)
+    const totalPayments = statusDistribution.reduce((sum: number, item: StatusDistributionItem) => sum + item._count.paymentStatus, 0)
     
-    const paymentStatusDistribution = statusDistribution.map((item: any) => ({
+    const paymentStatusDistribution: PaymentStatusDistribution[] = statusDistribution.map((item: StatusDistributionItem) => ({
       status: item.paymentStatus,
       count: item._count.paymentStatus,
       percentage: Math.round((item._count.paymentStatus / totalPayments) * 100)

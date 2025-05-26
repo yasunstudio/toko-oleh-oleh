@@ -8,17 +8,12 @@ import { Input } from '@/components/ui/input'
 import { AdminProductCard } from '@/components/admin/admin-product-card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Badge } from '@/components/ui/badge'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { 
   Plus, 
   Search, 
-  Filter, 
   SortAsc, 
   SortDesc, 
-  Grid3X3, 
-  List,
   Package,
-  TrendingUp,
   AlertTriangle,
   CheckCircle,
   XCircle,
@@ -86,7 +81,7 @@ export default function AdminProductsPage() {
 
   // Advanced filtering and sorting logic using useMemo for performance
   const filteredAndSortedProducts = useMemo(() => {
-    let filtered = products.filter(product => {
+    const filtered = products.filter(product => {
       // Search filter
       const matchesSearch = searchTerm === '' || 
         product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -431,7 +426,7 @@ export default function AdminProductsPage() {
             <div className="flex flex-wrap gap-2 mt-4">
               {searchTerm && (
                 <Badge variant="secondary" className="px-3 py-1">
-                  Pencarian: "{searchTerm}"
+                  Pencarian: &quot;{searchTerm}&quot;
                   <button
                     onClick={() => setSearchTerm('')}
                     className="ml-2 hover:text-destructive"

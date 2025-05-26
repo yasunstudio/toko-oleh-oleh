@@ -16,7 +16,7 @@ import {
   Pie,
   Cell
 } from 'recharts'
-import { Download, Calendar, TrendingUp, AlertTriangle, FileText, DollarSign, BarChart3, Printer } from 'lucide-react'
+import { Download, Calendar, TrendingUp, AlertTriangle, DollarSign, BarChart3, Printer } from 'lucide-react'
 
 interface PaymentReportData {
   dailyRevenue: Array<{

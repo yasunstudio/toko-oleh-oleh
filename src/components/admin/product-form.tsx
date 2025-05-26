@@ -14,7 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch'
 import { useToast } from "@/hooks/use-toast"
 import { Upload, X } from 'lucide-react'
-import { Product, Category, ProductImage } from '@/types'
+import { Product, Category } from '@/types'
 import Image from 'next/image'
 import { createProductAction } from '@/app/actions'
 

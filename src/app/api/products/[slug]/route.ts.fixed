@@ -1,15 +1,16 @@
+// filepath: /Users/yasunstudio/Development/toko-oleh-oleh/src/app/api/products/[slug]/route.ts
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: Promise<{ slug: string }> }
+  { params }: { params: { slug: string } }
 ) {
   try {
-    const { slug } = await params;
+    // Gunakan params.slug langsung tanpa await
     const product = await prisma.product.findUnique({
       where: {
-        slug,
+        slug: params.slug,
         isActive: true
       },
       include: {

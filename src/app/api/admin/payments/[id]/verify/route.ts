@@ -2,12 +2,14 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/db'
+import { OrderStatus, PaymentStatus } from '@prisma/client'
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const session = await getServerSession(authOptions)
     
     if (!session || session.user.role !== 'ADMIN') {
@@ -27,7 +29,7 @@ export async function POST(
     }
 
     const order = await prisma.order.findUnique({
-      where: { id: params.id }
+      where: { id }
     })
 
     if (!order) {
@@ -44,12 +46,20 @@ export async function POST(
       )
     }
 
-    let updateData: any = {}
+    interface UpdateData {
+      paymentStatus: PaymentStatus
+      status?: OrderStatus
+      rejectionReason?: string
+    }
+
+    let updateData: UpdateData = {
+      paymentStatus: 'PENDING' as PaymentStatus
+    }
 
     if (action === 'verify') {
       updateData = {
-        paymentStatus: 'VERIFIED',
-        status: order.status === 'PENDING' ? 'CONFIRMED' : order.status
+        paymentStatus: PaymentStatus.VERIFIED,
+        status: order.status === OrderStatus.PENDING ? OrderStatus.CONFIRMED : order.status
       }
     } else if (action === 'reject') {
       if (!reason) {
@@ -59,14 +69,14 @@ export async function POST(
         )
       }
       updateData = {
-        paymentStatus: 'REJECTED',
+        paymentStatus: PaymentStatus.REJECTED,
         // Could add a notes field to store rejection reason
         // notes: reason
       }
     }
 
     const updatedOrder = await prisma.order.update({
-      where: { id: params.id },
+      where: { id },
       data: updateData,
       include: {
         user: {

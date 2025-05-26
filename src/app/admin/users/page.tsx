@@ -1,13 +1,13 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { AdminUserCard } from '@/components/admin/admin-user-card'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Search, Filter, UserPlus, Users, Shield, Ban } from 'lucide-react'
+import { Search, UserPlus, Users, Shield, Ban } from 'lucide-react'
 import Link from 'next/link'
 import { AdminBreadcrumb } from '@/components/admin/admin-breadcrumb'
 

@@ -5,9 +5,10 @@ import { prisma } from '@/lib/db'
 
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const session = await getServerSession(authOptions)
     
     if (!session) {
@@ -29,7 +30,7 @@ export async function PATCH(
     // Check if cart item belongs to user
     const cartItem = await prisma.cartItem.findFirst({
       where: {
-        id: params.id,
+        id,
         userId: session.user.id
       },
       include: { product: true }
@@ -51,7 +52,7 @@ export async function PATCH(
     }
 
     const updatedItem = await prisma.cartItem.update({
-      where: { id: params.id },
+      where: { id },
       data: { quantity },
       include: {
         product: {
@@ -80,9 +81,10 @@ export async function PATCH(
 
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const session = await getServerSession(authOptions)
     
     if (!session) {
@@ -95,7 +97,7 @@ export async function DELETE(
     // Check if cart item belongs to user
     const cartItem = await prisma.cartItem.findFirst({
       where: {
-        id: params.id,
+        id,
         userId: session.user.id
       }
     })
@@ -108,7 +110,7 @@ export async function DELETE(
     }
 
     await prisma.cartItem.delete({
-      where: { id: params.id }
+      where: { id }
     })
 
     return NextResponse.json({ message: 'Item berhasil dihapus' })

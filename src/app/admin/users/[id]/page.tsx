@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -66,13 +66,7 @@ export default function UserDetailPage() {
   const [loading, setLoading] = useState(true)
   const [deleting, setDeleting] = useState(false)
 
-  useEffect(() => {
-    if (params.id) {
-      fetchUserDetail()
-    }
-  }, [params.id])
-
-  const fetchUserDetail = async () => {
+  const fetchUserDetail = useCallback(async () => {
     try {
       const response = await fetch(`/api/admin/users/${params.id}`)
       if (response.ok) {
@@ -84,7 +78,13 @@ export default function UserDetailPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [params.id])
+
+  useEffect(() => {
+    if (params.id) {
+      fetchUserDetail()
+    }
+  }, [params.id, fetchUserDetail])
 
   const handleDeleteUser = async () => {
     if (!user || user._count.orders > 0) {
@@ -116,7 +116,7 @@ export default function UserDetailPage() {
           variant: 'destructive'
         })
       }
-    } catch (error) {
+    } catch {
       toast({
         title: 'Error',
         description: 'Terjadi kesalahan',
@@ -430,7 +430,7 @@ export default function UserDetailPage() {
                       <AlertDialogHeader>
                         <AlertDialogTitle>Hapus Pengguna</AlertDialogTitle>
                         <AlertDialogDescription>
-                          Apakah Anda yakin ingin menghapus pengguna "{user.name}"? 
+                          Apakah Anda yakin ingin menghapus pengguna &quot;{user.name}&quot;? 
                           Tindakan ini tidak dapat dibatalkan.
                           {user._count.orders > 0 && (
                             <span className="block mt-2 text-red-600 font-medium">

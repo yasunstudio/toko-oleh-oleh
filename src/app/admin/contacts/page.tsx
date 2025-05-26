@@ -1,10 +1,10 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
@@ -29,7 +29,7 @@ export default function AdminContactPage() {
     total: 0
   })
 
-  const fetchContacts = async () => {
+  const fetchContacts = useCallback(async () => {
     try {
       setLoading(true)
       const params = new URLSearchParams({
@@ -60,7 +60,7 @@ export default function AdminContactPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [pagination.page, pagination.limit, statusFilter, searchTerm])
 
   const updateContactStatus = async (contactId: string, status: ContactStatus, adminReply?: string) => {
     try {
@@ -134,7 +134,7 @@ export default function AdminContactPage() {
 
   useEffect(() => {
     fetchContacts()
-  }, [pagination.page, statusFilter, searchTerm])
+  }, [fetchContacts])
 
   const handleSearch = (value: string) => {
     setSearchTerm(value)

@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useParams } from 'next/navigation'
 import { ProductForm } from '@/components/admin/product-form'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -12,13 +12,7 @@ export default function EditProductPage() {
   const [product, setProduct] = useState<Product | null>(null)
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    if (params.id) {
-      fetchProduct()
-    }
-  }, [params.id])
-
-  const fetchProduct = async () => {
+  const fetchProduct = useCallback(async () => {
     try {
       const response = await fetch(`/api/admin/products/${params.id}`)
       if (response.ok) {
@@ -30,7 +24,13 @@ export default function EditProductPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [params.id])
+
+  useEffect(() => {
+    if (params.id) {
+      fetchProduct()
+    }
+  }, [params.id, fetchProduct])
 
   if (loading) {
     return (

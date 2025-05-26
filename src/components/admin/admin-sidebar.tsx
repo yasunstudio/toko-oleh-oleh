@@ -25,10 +25,6 @@ import {
   ChevronDown,
   ChevronUp,
   TrendingUp,
-  FileText,
-  PieChart,
-  Activity,
-  Calendar,
   Clock,
   Star,
   Bell

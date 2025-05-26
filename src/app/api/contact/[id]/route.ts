@@ -3,15 +3,14 @@ import { prisma } from '@/lib/db'
 import { ContactStatus } from '@/types/contact'
 
 interface ContactParams {
-  params: {
-    id: string
-  }
+  params: Promise<{ id: string }>
 }
 
 export async function GET(request: NextRequest, { params }: ContactParams) {
   try {
+    const { id } = await params;
     const contact = await prisma.contact.findUnique({
-      where: { id: params.id }
+      where: { id }
     })
 
     if (!contact) {
@@ -38,6 +37,7 @@ export async function GET(request: NextRequest, { params }: ContactParams) {
 
 export async function PATCH(request: NextRequest, { params }: ContactParams) {
   try {
+    const { id } = await params;
     const body = await request.json()
     const { status, adminReply } = body
 
@@ -63,7 +63,7 @@ export async function PATCH(request: NextRequest, { params }: ContactParams) {
     }
 
     const contact = await prisma.contact.update({
-      where: { id: params.id },
+      where: { id },
       data: updateData
     })
 
@@ -92,8 +92,9 @@ export async function PATCH(request: NextRequest, { params }: ContactParams) {
 
 export async function DELETE(request: NextRequest, { params }: ContactParams) {
   try {
+    const { id } = await params;
     await prisma.contact.delete({
-      where: { id: params.id }
+      where: { id }
     })
 
     return NextResponse.json({

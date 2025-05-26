@@ -15,7 +15,7 @@ export async function testAuthAction() {
 
 export async function createProductAction(data: {
   name: string;
-  description: string;
+  description?: string;
   price: number;
   categoryId: string;
   stock: number;
@@ -90,7 +90,7 @@ export async function createProductAction(data: {
     // Import prisma client 
     const { prisma } = await import('@/lib/db')
     
-    // Create the product first
+    // Create the product with images relationship
     const product = await prisma.product.create({
       data: {
         name,
@@ -100,23 +100,19 @@ export async function createProductAction(data: {
         categoryId,
         weight: weight ? (typeof weight === 'string' ? parseFloat(weight) : Number(weight)) : null,
         slug,
-        isActive: Boolean(isActive !== undefined ? isActive : true)
+        isActive: Boolean(isActive !== undefined ? isActive : true),
+        // Create images directly using a relation
+        images: {
+          create: images.map((url: string) => ({
+            url
+          }))
+        }
+      },
+      include: {
+        category: true,
+        images: true
       }
     })
-    
-    // Then create the product images
-    if (images && images.length > 0) {
-      await Promise.all(
-        images.map(async (url: string) => {
-          await prisma.productImage.create({
-            data: {
-              url,
-              productId: product.id
-            }
-          })
-        })
-      )
-    }
     
     // Fetch the complete product with images and category
     const completeProduct = await prisma.product.findUnique({

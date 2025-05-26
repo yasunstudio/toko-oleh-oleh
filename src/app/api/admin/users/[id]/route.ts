@@ -6,7 +6,7 @@ import bcrypt from 'bcryptjs'
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions)
@@ -18,8 +18,9 @@ export async function GET(
       )
     }
 
+    const { id } = await params;
     const user = await prisma.user.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         _count: {
           select: { orders: true }
@@ -61,7 +62,7 @@ export async function GET(
 
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions)
@@ -75,6 +76,8 @@ export async function PATCH(
 
     const body = await req.json()
     const { name, email, phone, address, role, password } = body
+
+    const { id } = await params;
 
     // Prepare update data
     const updateData: any = {}
@@ -94,7 +97,7 @@ export async function PATCH(
       const existingUser = await prisma.user.findFirst({
         where: {
           email,
-          id: { not: params.id }
+          id: { not: id }
         }
       })
 
@@ -107,7 +110,7 @@ export async function PATCH(
     }
 
     const user = await prisma.user.update({
-      where: { id: params.id },
+      where: { id },
       data: updateData,
       include: {
         _count: {
@@ -132,7 +135,7 @@ export async function PATCH(
 
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions)
@@ -144,8 +147,10 @@ export async function DELETE(
       )
     }
 
+    const { id } = await params;
+    
     // Cannot delete self
-    if (session.user.id === params.id) {
+    if (session.user.id === id) {
       return NextResponse.json(
         { error: 'Tidak dapat menghapus akun sendiri' },
         { status: 400 }
@@ -154,7 +159,7 @@ export async function DELETE(
 
     // Check if user has orders
     const orderCount = await prisma.order.count({
-      where: { userId: params.id }
+      where: { userId: id }
     })
 
     if (orderCount > 0) {
@@ -166,12 +171,12 @@ export async function DELETE(
 
     // Delete cart items first
     await prisma.cartItem.deleteMany({
-      where: { userId: params.id }
+      where: { userId: id }
     })
 
     // Delete user
     await prisma.user.delete({
-      where: { id: params.id }
+      where: { id }
     })
 
     return NextResponse.json({ message: 'Pengguna berhasil dihapus' })

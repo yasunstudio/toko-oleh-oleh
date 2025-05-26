@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -34,11 +34,7 @@ export default function AdminHeroSlidesPage() {
   const [editingSlide, setEditingSlide] = useState<HeroSlide | null>(null)
   const { toast } = useToast()
 
-  useEffect(() => {
-    fetchSlides()
-  }, [])
-
-  const fetchSlides = async () => {
+  const fetchSlides = useCallback(async () => {
     try {
       const response = await fetch('/api/admin/hero-slides')
       if (response.ok) {
@@ -55,7 +51,11 @@ export default function AdminHeroSlidesPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [toast])
+
+  useEffect(() => {
+    fetchSlides()
+  }, [fetchSlides])
 
   const handleDelete = async (id: string) => {
     if (!confirm('Apakah Anda yakin ingin menghapus slide ini?')) return
@@ -74,7 +74,7 @@ export default function AdminHeroSlidesPage() {
       } else {
         throw new Error('Failed to delete')
       }
-    } catch (error) {
+    } catch {
       toast({
         title: 'Error',
         description: 'Gagal menghapus hero slide',
@@ -108,7 +108,7 @@ export default function AdminHeroSlidesPage() {
       } else {
         throw new Error('Failed to update')
       }
-    } catch (error) {
+    } catch {
       toast({
         title: 'Error',
         description: 'Gagal mengupdate status slide',
@@ -147,7 +147,7 @@ export default function AdminHeroSlidesPage() {
         description: 'Urutan slide berhasil diubah'
       })
       fetchSlides()
-    } catch (error) {
+    } catch {
       toast({
         title: 'Error',
         description: 'Gagal mengubah urutan slide',

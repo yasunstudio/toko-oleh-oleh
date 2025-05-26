@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useParams } from 'next/navigation'
 import { CategoryForm } from '@/components/admin/category-form'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -19,13 +19,7 @@ export default function EditCategoryPage() {
   const [category, setCategory] = useState<Category | null>(null)
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    if (params.id) {
-      fetchCategory()
-    }
-  }, [params.id])
-
-  const fetchCategory = async () => {
+  const fetchCategory = useCallback(async () => {
     try {
       const response = await fetch(`/api/admin/categories/${params.id}`)
       if (response.ok) {
@@ -37,7 +31,13 @@ export default function EditCategoryPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [params.id])
+
+  useEffect(() => {
+    if (params.id) {
+      fetchCategory()
+    }
+  }, [params.id, fetchCategory])
 
   if (loading) {
     return (

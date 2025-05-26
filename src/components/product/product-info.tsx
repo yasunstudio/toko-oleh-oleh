@@ -1,15 +1,8 @@
 'use client'
 
-import { useState } from 'react'
-import { useSession } from 'next-auth/react'
-import { useRouter } from 'next/navigation'
-import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { useCartStore } from '@/store/cart-store'
-import { useToast } from '@/hooks/use-toast'
-import { ShoppingCart, Plus, Minus, Star, Truck } from 'lucide-react'
+import { Separator } from '@/components/ui/separator'
+import { Star, CheckCircle } from 'lucide-react'
 import { Product } from '@/types'
 
 interface ProductInfoProps {
@@ -17,13 +10,6 @@ interface ProductInfoProps {
 }
 
 export function ProductInfo({ product }: ProductInfoProps) {
-  const { data: session } = useSession()
-  const router = useRouter()
-  const { addItem } = useCartStore()
-  const { toast } = useToast()
-  const [quantity, setQuantity] = useState(1)
-  const [loading, setLoading] = useState(false)
-
   const formatPrice = (price: number) => {
     if (!price && price !== 0) return 'Rp 0'
     
@@ -38,205 +24,126 @@ export function ProductInfo({ product }: ProductInfoProps) {
     }
   }
 
-  const handleQuantityChange = (newQuantity: number) => {
-    if (newQuantity >= 1 && newQuantity <= product.stock) {
-      setQuantity(newQuantity)
-    }
-  }
-
-  const handleAddToCart = async (): Promise<boolean> => {
-    if (loading) return false // Prevent double clicks
-    
-    if (!session) {
-      toast({
-        title: 'Login Diperlukan',
-        description: 'Silakan login terlebih dahulu untuk menambahkan produk ke keranjang',
-        variant: 'destructive'
-      })
-      router.push('/auth/login')
-      return false
-    }
-
-    if (product.stock === 0) {
-      toast({
-        title: 'Stok Habis',
-        description: 'Produk ini sedang tidak tersedia',
-        variant: 'destructive'
-      })
-      return false
-    }
-
-    setLoading(true)
-    try {
-      const response = await fetch('/api/cart', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          productId: product.id,
-          quantity
-        })
-      })
-
-      if (response.ok) {
-        // Validate product before adding to cart
-        if (!product || !product.id) {
-          toast({
-            title: 'Error',
-            description: 'Data produk tidak valid',
-            variant: 'destructive'
-          })
-          return false
-        }
-
-        addItem(product, quantity)
-
-        toast({
-          title: 'Berhasil!',
-          description: `${quantity} ${product.name} ditambahkan ke keranjang`
-        })
-        return true
-      } else {
-        const data = await response.json()
-        toast({
-          title: 'Gagal',
-          description: data.error || 'Gagal menambahkan ke keranjang',
-          variant: 'destructive'
-        })
-        return false
-      }
-    } catch (error) {
-      toast({
-        title: 'Error',
-        description: 'Terjadi kesalahan',
-        variant: 'destructive'
-      })
-      return false
-    } finally {
-      setLoading(false)
-    }
-  }
-
   return (
-    <div className="space-y-6 text-foreground">
-      {/* Category & Rating */}
-      <div className="flex items-center justify-between">
+    <div className="space-y-5 text-foreground">
+      {/* Category */}
+      <div>
         {product.category ? (
-          <Badge variant="secondary" className="bg-secondary text-secondary-foreground">{product.category.name}</Badge>
+          <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20 px-3 py-1">
+            {product.category.name}
+          </Badge>
         ) : (
           <Badge variant="outline" className="border-border text-muted-foreground">Tanpa Kategori</Badge>
         )}
-        <div className="flex items-center space-x-1">
-          {[...Array(5)].map((_, i) => (
-            <Star
-              key={i}
-              className={`h-4 w-4 ${i < 4 ? 'fill-yellow-400 text-yellow-500 dark:text-yellow-400' : 'text-muted-foreground/50'}`}
-            />
-          ))}
-          <span className="text-sm text-muted-foreground ml-2">(4.0)</span> {/* Assuming static rating */}
-        </div>
       </div>
 
       {/* Product Name */}
-      <h1 className="text-3xl font-bold text-foreground">{product.name}</h1>
+      <div>
+        <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-2 leading-tight">{product.name}</h1>
+      </div>
+
+      {/* Product ID & SKU */}
+      <div className="flex items-center text-sm text-muted-foreground">
+        <span>SKU: {product.slug}</span>
+        <span className="mx-2">•</span>
+        <span>ID: {product.id.substring(0, 8)}</span>
+      </div>
+
+      {/* Rating & Sales */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center">
+          <div className="flex items-center space-x-1">
+            {[...Array(5)].map((_, i) => (
+              <Star
+                key={i}
+                className={`h-4 w-4 ${i < 4 ? 'fill-yellow-400 text-yellow-500 dark:text-yellow-400' : 'text-muted-foreground/50'}`}
+              />
+            ))}
+          </div>
+          <span className="text-sm text-muted-foreground ml-2">(4.0)</span>
+        </div>
+        <div className="text-sm text-muted-foreground">
+          <span className="font-medium text-foreground">120+</span> terjual
+        </div>
+      </div>
+
+      <Separator />
 
       {/* Price */}
       <div className="space-y-2">
-        <p className="text-3xl font-bold text-primary">{formatPrice(product.price)}</p>
-        {product.weight && (
-          <p className="text-sm text-muted-foreground">Berat: {product.weight} gram</p>
-        )}
+        <div className="flex items-baseline space-x-3">
+          <p className="text-2xl sm:text-3xl font-bold text-primary">{formatPrice(product.price)}</p>
+          {/* You could add original price here if there's a discount */}
+        </div>
       </div>
 
       {/* Stock Status */}
-      <div className="flex items-center space-x-2">
-        <span className="text-sm font-medium text-foreground">Stok:</span>
+      <div className="flex items-center justify-between">
+        <span className="text-sm font-medium text-foreground">Status:</span>
         <Badge variant={product.stock > 0 ? 'default' : 'destructive'}
           className={`${product.stock > 0 ? 'bg-green-500/10 text-green-700 dark:text-green-400 border-green-500/40' : 'bg-destructive text-destructive-foreground' }`}
         >
-          {product.stock > 0 ? `${product.stock} tersedia` : 'Habis'}
+          {product.stock > 0 ? `Tersedia (${product.stock})` : 'Habis'}
         </Badge>
       </div>
+        
+      {product.stock > 0 && product.stock <= 10 && (
+        <p className="text-sm text-orange-600 dark:text-orange-400 font-medium">
+          ⚡ Stok terbatas! Hanya tersisa {product.stock} unit
+        </p>
+      )}
+
+      {/* Product Specifications */}
+      <div className="space-y-3">
+        <h3 className="font-semibold text-foreground">Spesifikasi Produk</h3>
+        
+        <div className="grid grid-cols-2 gap-2 sm:gap-3 text-sm">
+          {product.weight && (
+            <>
+              <div className="text-muted-foreground">Berat</div>
+              <div className="font-medium">{product.weight} gram</div>
+            </>
+          )}
+          
+          <div className="text-muted-foreground">Kondisi</div>
+          <div className="font-medium">Baru</div>
+          
+          <div className="text-muted-foreground">Min. Pemesanan</div>
+          <div className="font-medium">1 Pcs</div>
+          
+          <div className="text-muted-foreground">Kategori</div>
+          <div className="font-medium">{product.category?.name || 'Lainnya'}</div>
+        </div>
+      </div>
+
+      <Separator />
 
       {/* Description */}
       <div>
+        <h3 className="font-semibold text-foreground mb-2">Deskripsi Produk</h3>
         {product.description ? (
-          <p className="text-muted-foreground leading-relaxed">{product.description}</p>
+          <p className="text-muted-foreground leading-relaxed text-sm sm:text-base">{product.description}</p>
         ) : (
           <p className="text-muted-foreground/70 italic">Tidak ada deskripsi produk</p>
         )}
       </div>
 
-      {/* Quantity Selector */}
-      {product.stock > 0 && (
-        <div className="space-y-2">
-          <Label htmlFor="quantity" className="text-foreground">Jumlah</Label>
-          <div className="flex items-center space-x-2">
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => handleQuantityChange(quantity - 1)}
-              disabled={quantity <= 1}
-              className="border-border hover:bg-accent hover:text-accent-foreground h-9 w-9"
-            >
-              <Minus className="h-4 w-4" />
-            </Button>
-            <Input
-              id="quantity"
-              type="number"
-              min="1"
-              max={product.stock}
-              value={quantity}
-              onChange={(e) => handleQuantityChange(parseInt(e.target.value) || 1)}
-              className="w-20 text-center bg-background border-border focus:border-primary"
-            />
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => handleQuantityChange(quantity + 1)}
-              disabled={quantity >= product.stock}
-              className="border-border hover:bg-accent hover:text-accent-foreground h-9 w-9"
-            >
-              <Plus className="h-4 w-4" />
-            </Button>
+      {/* Product Highlights */}
+      <div className="space-y-3 pt-1">
+        <h3 className="font-semibold text-foreground">Kelebihan Produk</h3>
+        <div className="grid grid-cols-1 gap-2 sm:gap-3">
+          <div className="flex items-start space-x-2 sm:space-x-3">
+            <CheckCircle className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
+            <span className="text-muted-foreground text-sm sm:text-base">100% asli dan berkualitas tinggi</span>
           </div>
-        </div>
-      )}
-
-      {/* Add to Cart Button */}
-      <div className="space-y-4">
-        <Button
-          onClick={handleAddToCart}
-          disabled={product.stock === 0 || loading}
-          className="w-full"
-          size="lg"
-        >
-          <ShoppingCart className="h-5 w-5 mr-2" />
-          {loading ? 'Menambahkan...' : 'Tambah ke Keranjang'}
-        </Button>
-
-        {session && (
-          <Button
-            variant="outline"
-            className="w-full"
-            size="lg"
-            onClick={async () => {
-              await handleAddToCart()
-              router.push('/cart')
-            }}
-            disabled={product.stock === 0 || loading}
-          >
-            Beli Sekarang
-          </Button>
-        )}
-      </div>
-
-      {/* Shipping Info */}
-      <div className="border-t border-border pt-6">
-        <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-          <Truck className="h-4 w-4 text-primary" />
-          <span>Gratis ongkir untuk pembelian di atas Rp. 100.000</span>
+          <div className="flex items-start space-x-2 sm:space-x-3">
+            <CheckCircle className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
+            <span className="text-muted-foreground text-sm sm:text-base">Dikemas dengan aman dan higienis</span>
+          </div>
+          <div className="flex items-start space-x-2 sm:space-x-3">
+            <CheckCircle className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
+            <span className="text-muted-foreground text-sm sm:text-base">Produk lokal dengan kualitas premium</span>
+          </div>
         </div>
       </div>
     </div>

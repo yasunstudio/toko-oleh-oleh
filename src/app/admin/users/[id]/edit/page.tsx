@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useParams } from 'next/navigation'
 import { UserForm } from '@/components/admin/user-form'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -20,13 +20,7 @@ export default function EditUserPage() {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    if (params.id) {
-      fetchUser()
-    }
-  }, [params.id])
-
-  const fetchUser = async () => {
+  const fetchUser = useCallback(async () => {
     try {
       const response = await fetch(`/api/admin/users/${params.id}`)
       if (response.ok) {
@@ -38,7 +32,13 @@ export default function EditUserPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [params.id])
+
+  useEffect(() => {
+    if (params.id) {
+      fetchUser()
+    }
+  }, [params.id, fetchUser])
 
   if (loading) {
     return (

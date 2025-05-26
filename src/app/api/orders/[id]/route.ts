@@ -5,9 +5,10 @@ import { prisma } from '@/lib/db'
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const session = await getServerSession(authOptions)
     
     if (!session) {
@@ -18,8 +19,8 @@ export async function GET(
     }
 
     const where = session.user.role === 'ADMIN' 
-      ? { id: params.id }
-      : { id: params.id, userId: session.user.id }
+      ? { id }
+      : { id, userId: session.user.id }
 
     const order = await prisma.order.findFirst({
       where,

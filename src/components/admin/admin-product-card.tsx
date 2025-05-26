@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge'
 import { Switch } from '@/components/ui/switch'
 import { useToast } from "@/hooks/use-toast"
 import { Edit, Trash2, Eye } from 'lucide-react'
-import { Product, ProductImage } from '@/types'
+import { Product } from '@/types'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -89,7 +89,7 @@ export function AdminProductCard({ product, onUpdate }: AdminProductCardProps) {
           variant: 'destructive'
         })
       }
-    } catch (error) {
+    } catch {
       toast({
         title: 'Error',
         description: 'Terjadi kesalahan',

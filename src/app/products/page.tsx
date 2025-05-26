@@ -9,7 +9,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
-import { Grid3X3, List, SlidersHorizontal } from 'lucide-react'
+import { SlidersHorizontal } from 'lucide-react'
 import { Product } from '@/types'
 
 interface ProductsResponse {
@@ -183,7 +183,7 @@ export default function ProductsPage() {
                         const totalPages = data.pagination.totalPages
                         const current = currentPage
                         let startPage = Math.max(1, current - 2)
-                        let endPage = Math.min(totalPages, startPage + 4)
+                        const endPage = Math.min(totalPages, startPage + 4)
                         
                         if (endPage - startPage < 4) {
                           startPage = Math.max(1, endPage - 4)

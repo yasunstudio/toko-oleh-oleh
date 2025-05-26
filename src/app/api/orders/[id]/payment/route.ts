@@ -7,9 +7,10 @@ import { join } from 'path'
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const session = await getServerSession(authOptions)
     
     if (!session) {
@@ -32,7 +33,7 @@ export async function POST(
     // Check if order exists and belongs to user
     const order = await prisma.order.findFirst({
       where: {
-        id: params.id,
+        id,
         userId: session.user.id
       }
     })
@@ -70,7 +71,7 @@ export async function POST(
 
     // Update order
     const updatedOrder = await prisma.order.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         paymentProof: `/uploads/${fileName}`,
         paymentStatus: 'PAID'

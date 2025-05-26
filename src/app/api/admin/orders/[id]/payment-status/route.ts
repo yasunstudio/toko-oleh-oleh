@@ -5,9 +5,10 @@ import { prisma } from '@/lib/db'
 
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const session = await getServerSession(authOptions)
     
     if (!session || session.user.role !== 'ADMIN') {
@@ -20,7 +21,7 @@ export async function PATCH(
     const { paymentStatus } = await req.json()
 
     const order = await prisma.order.update({
-      where: { id: params.id },
+      where: { id },
       data: { paymentStatus },
       include: {
         user: {
