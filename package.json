@@ -25,7 +25,9 @@
     "railway:deploy": "prisma migrate deploy && prisma generate && next build",
     "seed-traffic": "tsx prisma/seed-traffic.ts",
     "seed-hero": "tsx prisma/seed-hero-slides.ts",
-    "migrate-images": "tsx scripts/migrate-images-to-cloud.ts"
+    "migrate-images": "tsx scripts/migrate-images-to-cloud.ts",
+    "verify-images": "tsx scripts/verify-cloud-images.ts",
+    "verify-cloud-storage": "tsx scripts/verify-cloud-storage.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.0.1",
@@ -52,6 +54,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
+    "dotenv": "^16.5.0",
     "exceljs": "^4.4.0",
     "jsonwebtoken": "^9.0.2",
     "lucide-react": "^0.511.0",

@@ -23,8 +23,16 @@ export function AdminNavbar() {
   const { data: session } = useSession() as { data: ExtendedSession | null }
   const { toggleCollapsed } = useSidebar()
 
-  const handleSignOut = () => {
-    signOut({ callbackUrl: '/' })
+  const handleSignOut = async () => {
+    try {
+      // Proper logout with redirect to admin login page
+      await signOut({
+        callbackUrl: '/admin/login',
+        redirect: true,
+      })
+    } catch (error) {
+      console.error('Admin logout error:', error)
+    }
   }
 
   return (

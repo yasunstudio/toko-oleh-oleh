@@ -29,9 +29,16 @@ export function Navbar() {
   const { data: session } = useSession()
   const { totalItems, clearCart } = useCartStore()
 
-  const handleSignOut = () => {
-    clearCart() // Clear cart when signing out
-    signOut({ callbackUrl: '/' })
+  const handleSignOut = async () => {
+    try {
+      clearCart() // Clear cart when signing out
+      await signOut({
+        callbackUrl: '/',
+        redirect: true,
+      })
+    } catch (error) {
+      console.error('Logout error:', error)
+    }
   }
 
   return (
