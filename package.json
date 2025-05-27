@@ -24,7 +24,8 @@
     "postinstall": "prisma generate",
     "railway:deploy": "prisma migrate deploy && prisma generate && next build",
     "seed-traffic": "tsx prisma/seed-traffic.ts",
-    "seed-hero": "tsx prisma/seed-hero-slides.ts"
+    "seed-hero": "tsx prisma/seed-hero-slides.ts",
+    "migrate-images": "tsx scripts/migrate-images-to-cloud.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.0.1",
