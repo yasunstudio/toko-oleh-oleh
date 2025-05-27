@@ -154,7 +154,6 @@ class CSVExporter {
       subject: contact.subject,
       message: contact.message,
       status: contact.status,
-      isRead: contact.isRead,
       adminReply: contact.adminReply || '',
       createdAt: contact.createdAt.toISOString(),
       updatedAt: contact.updatedAt.toISOString()
@@ -166,49 +165,40 @@ class CSVExporter {
 
   async exportSalesReport() {
     console.log('📈 Exporting sales report to CSV...')
-    
+
     const salesData = await prisma.order.findMany({
-      where: {
-        status: {
-          in: ['COMPLETED', 'DELIVERED']
-        }
-      },
-      include: {
-        user: true,
-        items: {
-          include: {
-            product: {
-              include: {
-                category: true
-              }
-            }
-          }
-        },
-        payment: true
+      select: {
+        id: true,
+        createdAt: true,
+        updatedAt: true,
+        orderNumber: true,
+        status: true,
+        totalAmount: true,
+        shippingAddress: true,
+        notes: true,
+        paymentProof: true,
+        bankAccount: true,
+        paymentStatus: true,
+        userId: true
       }
     })
 
-    const flatSalesData = salesData.flatMap(order => 
-      order.items.map(item => ({
-        orderId: order.id,
-        orderDate: order.createdAt.toISOString().split('T')[0],
-        customerName: order.user.name,
-        customerEmail: order.user.email,
-        productId: item.productId,
-        productName: item.product.name,
-        categoryName: item.product.category.name,
-        quantity: item.quantity,
-        unitPrice: item.price,
-        totalItemPrice: item.quantity * item.price,
-        orderTotalAmount: order.totalAmount,
-        paymentMethod: order.payment?.method || '',
-        paymentStatus: order.payment?.status || '',
-        orderStatus: order.status
-      }))
-    )
+    const flatSalesData = salesData.map(order => ({
+      orderId: order.id,
+      orderNumber: order.orderNumber,
+      totalAmount: order.totalAmount,
+      shippingAddress: order.shippingAddress,
+      notes: order.notes || '',
+      paymentProof: order.paymentProof || '',
+      bankAccount: order.bankAccount || '',
+      paymentStatus: order.paymentStatus,
+      orderStatus: order.status,
+      createdAt: order.createdAt.toISOString(),
+      updatedAt: order.updatedAt.toISOString()
+    }))
 
     await this.saveCSV('sales_report', flatSalesData)
-    console.log(`✓ Exported ${flatSalesData.length} sales records`)
+    console.log(`✓ Exported ${salesData.length} sales records`)
   }
 
   private async saveCSV(filename: string, data: any[]) {
@@ -227,7 +217,6 @@ class CSVExporter {
       await this.exportUsersCSV()
       await this.exportProductsCSV()
       await this.exportOrdersCSV()
-      await this.exportPaymentsCSV()
       await this.exportContactMessagesCSV()
       await this.exportSalesReport()
       
@@ -263,7 +252,7 @@ async function main() {
       await exporter.exportOrdersCSV()
       break
     case 'payments':
-      await exporter.exportPaymentsCSV()
+      console.error('❌ Exporting payments is not implemented.')
       break
     case 'contacts':
       await exporter.exportContactMessagesCSV()

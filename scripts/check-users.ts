@@ -19,7 +19,7 @@ async function checkUsers() {
   })
 
   console.log('📊 Total users found:', users.length)
-  console.log('=' * 50)
+  console.log('='.repeat(50))
   
   users.forEach((user, index) => {
     console.log(`${index + 1}. User:`)
@@ -31,7 +31,7 @@ async function checkUsers() {
   })
 
   console.log('🔑 LOGIN CREDENTIALS:')
-  console.log('=' * 30)
+  console.log('='.repeat(30))
   console.log('👨‍💼 ADMIN LOGIN:')
   console.log('   Email: admin@tokooleholeh.com')
   console.log('   Password: admin123')
