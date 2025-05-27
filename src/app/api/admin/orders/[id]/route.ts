@@ -20,6 +20,21 @@ export async function PATCH(
 
     const { status } = await req.json()
 
+    // Get current order to compare status
+    const currentOrder = await prisma.order.findUnique({
+      where: { id },
+      select: { 
+        status: true, 
+        userId: true, 
+        orderNumber: true,
+        user: { select: { name: true } }
+      }
+    })
+
+    if (!currentOrder) {
+      return NextResponse.json({ error: 'Order not found' }, { status: 404 })
+    }
+
     const order = await prisma.order.update({
       where: { id },
       data: { status },
@@ -36,6 +51,33 @@ export async function PATCH(
         }
       }
     })
+
+    // Create notification if status changed
+    if (currentOrder.status !== status) {
+      const statusMessages = {
+        PENDING: 'Pesanan Anda sedang menunggu konfirmasi',
+        CONFIRMED: 'Pesanan Anda telah dikonfirmasi dan sedang diproses',
+        PROCESSING: 'Pesanan Anda sedang disiapkan',
+        SHIPPED: 'Pesanan Anda telah dikirim',
+        DELIVERED: 'Pesanan Anda telah sampai di tujuan',
+        CANCELLED: 'Pesanan Anda telah dibatalkan'
+      }
+
+      await prisma.notification.create({
+        data: {
+          userId: currentOrder.userId,
+          title: 'Status Pesanan Diperbarui',
+          message: statusMessages[status as keyof typeof statusMessages] || 'Status pesanan Anda telah diperbarui',
+          type: 'ORDER_STATUS',
+          orderId: id,
+          data: JSON.stringify({
+            oldStatus: currentOrder.status,
+            newStatus: status,
+            orderNumber: currentOrder.orderNumber
+          })
+        }
+      })
+    }
 
     return NextResponse.json(order)
   } catch (error) {

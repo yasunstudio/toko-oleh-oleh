@@ -32,6 +32,15 @@ async function uploadToUploadthing(buffer: Buffer, fileName: string): Promise<st
   }
 }
 
+async function validateImageUrl(url: string): Promise<boolean> {
+  try {
+    const response = await fetch(url, { method: 'HEAD' });
+    return response.ok && response.headers.get('content-type')?.startsWith('image/') === true;
+  } catch {
+    return false;
+  }
+}
+
 export async function POST(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
@@ -87,8 +96,15 @@ export async function POST(req: NextRequest) {
       await writeFile(filePath, buffer)
 
       // Upload to UploadThing and get cloud URL
-      const uploadthingUrl = await uploadToUploadthing(buffer, fileName)
-      urls.push(uploadthingUrl)
+      const uploadthingUrl = await uploadToUploadthing(buffer, fileName);
+      const isValid = await validateImageUrl(uploadthingUrl);
+
+      if (isValid) {
+        urls.push(uploadthingUrl);
+      } else {
+        console.warn(`Invalid image URL: ${uploadthingUrl}. Using placeholder.`);
+        urls.push('/placeholder.jpg');
+      }
     }
 
     return NextResponse.json({ urls })

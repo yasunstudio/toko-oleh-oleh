@@ -45,6 +45,7 @@ export interface CartItem {
     images: ProductImage[];
     stock: number;
     slug: string;
+    category?: string; // Added category property
   };
 }
 
@@ -79,4 +80,31 @@ export interface Order {
       images: string[];
     };
   }[];
+}
+
+export interface CustomerNotification {
+  id: string;
+  title: string;
+  message: string;
+  type: 'ORDER_STATUS' | 'PAYMENT_STATUS' | 'GENERAL';
+  status: 'UNREAD' | 'READ';
+  createdAt: string;
+  orderId?: string;
+  orderNumber?: string;
+  data?: {
+    oldStatus?: string;
+    newStatus?: string;
+    paymentStatus?: string;
+  };
+}
+
+export interface NotificationData {
+  id: string;
+  userId: string;
+  type: string;
+  title: string;
+  message: string;
+  read: boolean;
+  createdAt: string;
+  data?: any;
 }

@@ -41,24 +41,47 @@ export async function POST(request: NextRequest) {
     const deviceType = detectDeviceType(userAgent || '');
     const trafficSource = detectTrafficSource(referrer);
     
-    // Get or create visitor with upsert to prevent race conditions
-    const visitor = await prisma.visitor.upsert({
-      where: { sessionId },
-      create: {
-        sessionId,
-        ipAddress,
-        userAgent,
-        device: deviceType,
-        firstVisit: timestamp,
-        lastVisit: timestamp,
-      },
-      update: {
-        lastVisit: timestamp,
-        // Update these fields if they've changed
-        ...(ipAddress && { ipAddress }),
-        ...(userAgent && { userAgent }),
-      },
+    // Debug: Log what we're trying to create
+    console.log('Attempting to create/update visitor with:', {
+      sessionId,
+      ipAddress,
+      userAgent,
+      device: deviceType,
+      firstVisit: timestamp,
+      lastVisit: timestamp,
     });
+    
+    // Try a simpler approach first - check if visitor exists
+    let visitor = await prisma.visitor.findUnique({
+      where: { sessionId }
+    });
+    
+    if (!visitor) {
+      // Create new visitor
+      console.log('Creating new visitor...');
+      visitor = await prisma.visitor.create({
+        data: {
+          sessionId,
+          ipAddress,
+          userAgent,
+          device: deviceType,
+          firstVisit: timestamp,
+          lastVisit: timestamp,
+        }
+      });
+    } else {
+      // Update existing visitor
+      console.log('Updating existing visitor...');
+      visitor = await prisma.visitor.update({
+        where: { sessionId },
+        data: {
+          lastVisit: timestamp,
+          // Update these fields if they've changed
+          ...(ipAddress && { ipAddress }),
+          ...(userAgent && { userAgent }),
+        }
+      });
+    }
 
     try {
       // Record page visit

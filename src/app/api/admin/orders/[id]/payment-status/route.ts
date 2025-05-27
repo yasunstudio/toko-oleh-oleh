@@ -20,6 +20,21 @@ export async function PATCH(
 
     const { paymentStatus } = await req.json()
 
+    // Get current order to compare payment status
+    const currentOrder = await prisma.order.findUnique({
+      where: { id },
+      select: { 
+        paymentStatus: true, 
+        userId: true, 
+        orderNumber: true,
+        user: { select: { name: true } }
+      }
+    })
+
+    if (!currentOrder) {
+      return NextResponse.json({ error: 'Order not found' }, { status: 404 })
+    }
+
     const order = await prisma.order.update({
       where: { id },
       data: { paymentStatus },
@@ -36,6 +51,30 @@ export async function PATCH(
         }
       }
     })
+
+    // Create notification if payment status changed
+    if (currentOrder.paymentStatus !== paymentStatus) {
+      const paymentMessages = {
+        PENDING: 'Pembayaran Anda sedang menunggu verifikasi',
+        VERIFIED: 'Pembayaran Anda telah diverifikasi dan dikonfirmasi',
+        REJECTED: 'Pembayaran Anda ditolak. Silakan hubungi customer service atau kirim ulang bukti pembayaran yang valid'
+      }
+
+      await prisma.notification.create({
+        data: {
+          userId: currentOrder.userId,
+          title: 'Status Pembayaran Diperbarui',
+          message: paymentMessages[paymentStatus as keyof typeof paymentMessages] || 'Status pembayaran Anda telah diperbarui',
+          type: 'PAYMENT_STATUS',
+          orderId: id,
+          data: JSON.stringify({
+            oldPaymentStatus: currentOrder.paymentStatus,
+            newPaymentStatus: paymentStatus,
+            orderNumber: currentOrder.orderNumber
+          })
+        }
+      })
+    }
 
     return NextResponse.json(order)
   } catch (error) {

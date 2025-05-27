@@ -1,26 +1,32 @@
 import fetch from 'node-fetch'
 
 async function testImageUrl(url: string): Promise<{ working: boolean; status?: number; error?: string }> {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 10000); // 10-second timeout
+
   try {
-    const response = await fetch(url, { 
+    const response = await fetch(url, {
       method: 'HEAD',
-      timeout: 10000,
       headers: {
         'User-Agent': 'Mozilla/5.0 (compatible; ImageVerifier/1.0)'
-      }
-    })
-    
-    const isImage = response.headers.get('content-type')?.startsWith('image/')
+      },
+      signal: controller.signal
+    });
+
+    clearTimeout(timeoutId);
+
+    const isImage = response.headers.get('content-type')?.startsWith('image/');
     return {
       working: response.ok && !!isImage,
       status: response.status
-    }
+    };
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : String(error)
+    clearTimeout(timeoutId);
+    const errorMessage = error instanceof Error ? error.message : String(error);
     return {
       working: false,
       error: errorMessage
-    }
+    };
   }
 }
 

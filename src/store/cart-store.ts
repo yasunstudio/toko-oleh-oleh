@@ -6,6 +6,7 @@ interface CartState {
   items: CartItem[]
   totalItems: number
   totalPrice: number
+  cartItems: CartItem[] // Added cartItems property
   addItem: (product: Product, quantity?: number) => void
   removeItem: (productId: string) => void
   updateQuantity: (productId: string, quantity: number) => void
@@ -29,16 +30,17 @@ export const useCartStore = create<CartState>()(
           }, 0)
         };
       };
-      
+
       return {
         items: [],
         totalItems: 0,
         totalPrice: 0,
-        
+        cartItems: [], // Initialize cartItems
+
         addItem: (product, quantity = 1) => {
           const items = get().items
           const existingItem = items.find(i => i?.product?.id === product.id)
-          
+
           // Format images to be compatible with CartItem
           const formattedImages: ProductImage[] = Array.isArray(product.images) 
             ? product.images.map(img => {
@@ -50,75 +52,58 @@ export const useCartStore = create<CartState>()(
                 }
               })
             : [];
-          
+
           if (existingItem) {
             const updatedItems = items.map(i =>
               i?.product?.id === product.id
                 ? { ...i, quantity: i.quantity + quantity }
                 : i
             )
-            
+
             const { totalItems, totalPrice } = calculateTotals(updatedItems);
-            set({ items: updatedItems, totalItems, totalPrice })
+            set({ items: updatedItems, totalItems, totalPrice, cartItems: updatedItems }); // Update cartItems
           } else {
             const newItem: CartItem = {
-              id: `cart-${product.id}-${Date.now()}`,
-              quantity,
-              product: {
-                id: product.id,
-                name: product.name,
-                price: product.price,
-                images: formattedImages,
-                stock: product.stock,
-                slug: product.slug
-              }
-            }
-            const newItems = [...items, newItem]
-            
-            const { totalItems, totalPrice } = calculateTotals(newItems);
-            set({ items: newItems, totalItems, totalPrice })
+              id: `cart-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+              product: { 
+                ...product, 
+                images: formattedImages, 
+                category: typeof product.category === 'string' ? product.category : product.category?.name || 'Uncategorized' // Convert category to string
+              },
+              quantity
+            };
+
+            const updatedItems = [...items, newItem];
+            const { totalItems, totalPrice } = calculateTotals(updatedItems);
+            set({ items: updatedItems, totalItems, totalPrice, cartItems: updatedItems }); // Update cartItems
           }
         },
-      
+
         removeItem: (productId) => {
-          const newItems = get().items.filter(i => i?.product?.id !== productId)
-          
-          const { totalItems, totalPrice } = calculateTotals(newItems);
-          set({ items: newItems, totalItems, totalPrice })
+          const items = get().items.filter(i => i?.product?.id !== productId);
+          const { totalItems, totalPrice } = calculateTotals(items);
+          set({ items, totalItems, totalPrice, cartItems: items }); // Update cartItems
         },
-        
+
         updateQuantity: (productId, quantity) => {
-          if (quantity <= 0) {
-            get().removeItem(productId)
-            return
-          }
-          
-          const updatedItems = get().items.map(i =>
-            i?.product?.id === productId ? { ...i, quantity } : i
-          )
-          
-          const { totalItems, totalPrice } = calculateTotals(updatedItems);
-          set({ items: updatedItems, totalItems, totalPrice })
+          const items = get().items.map(i =>
+            i?.product?.id === productId
+              ? { ...i, quantity }
+              : i
+          );
+          const { totalItems, totalPrice } = calculateTotals(items);
+          set({ items, totalItems, totalPrice, cartItems: items }); // Update cartItems
         },
-        
-        clearCart: () => set({ items: [], totalItems: 0, totalPrice: 0 }),
-        
-        syncCart: async () => {
-          const response = await fetch('/api/cart', {
-            method: 'GET',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-          });
-        
-          if (response.ok) {
-            const serverCartItems = await response.json();
-            const { totalItems, totalPrice } = calculateTotals(serverCartItems);
-            set({ items: serverCartItems, totalItems, totalPrice });
-          } else {
-            console.error('Failed to sync cart with server');
-          }
+
+        clearCart: () => {
+          set({ items: [], totalItems: 0, totalPrice: 0, cartItems: [] }); // Clear cartItems
         },
+
+        syncCart: () => {
+          const items = get().items;
+          const { totalItems, totalPrice } = calculateTotals(items);
+          set({ totalItems, totalPrice, cartItems: items }); // Sync cartItems
+        }
       };
     },
     {

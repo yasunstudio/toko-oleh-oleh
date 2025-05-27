@@ -26,6 +26,7 @@ model User {
   
   orders    Order[]
   cart      CartItem[]
+  notifications Notification[]
   
   @@map("users")
 }
@@ -115,6 +116,7 @@ model Order {
   user            User        @relation(fields: [userId], references: [id])
   
   orderItems      OrderItem[]
+  notifications   Notification[]
   
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
@@ -179,6 +181,85 @@ model Contact {
   @@map("contacts")
 }
 
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  title     String
+  message   String           @db.Text
+  type      NotificationType
+  status    NotificationStatus @default(UNREAD)
+  orderId   String?
+  data      String?          @db.Text // JSON string for additional data
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+  
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  order     Order?           @relation(fields: [orderId], references: [id], onDelete: SetNull)
+  
+  @@index([userId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("notifications")
+}
+
+model HeroSlide {
+  id                   String   @id @default(cuid())
+  title                String
+  subtitle             String?
+  description          String?  @db.Text
+  backgroundImage      String?
+  backgroundColor      String?
+  textColor           String   @default("#ffffff")
+  primaryButtonText   String?
+  primaryButtonLink   String?
+  secondaryButtonText String?
+  secondaryButtonLink String?
+  order               Int      @default(0)
+  isActive            Boolean  @default(true)
+  
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  
+  @@map("hero_slides")
+}
+
+model Visitor {
+  id         String     @id @default(cuid())
+  sessionId  String     @unique
+  ipAddress  String?
+  userAgent  String?    @db.Text
+  device     DeviceType @default(DESKTOP)
+  firstVisit DateTime   @default(now())
+  lastVisit  DateTime   @default(now())
+  
+  pageVisits PageVisit[]
+  
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+  
+  @@map("visitors")
+}
+
+model PageVisit {
+  id        String   @id @default(cuid())
+  url       String
+  pageTitle String?
+  timestamp DateTime @default(now())
+  referrer  String?
+  duration  Int?     // in seconds
+  bounced   Boolean  @default(false)
+  
+  visitorId String
+  visitor   Visitor  @relation(fields: [visitorId], references: [id], onDelete: Cascade)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@index([timestamp])
+  @@index([url])
+  @@map("page_visits")
+}
+
 enum UserRole {
   ADMIN
   CUSTOMER
@@ -207,39 +288,15 @@ enum ContactStatus {
   CLOSED
 }
 
-// Traffic tracking models
-model PageVisit {
-  id           String   @id @default(cuid())
-  url          String   // the page URL that was visited
-  pageTitle    String?  // page title
-  timestamp    DateTime @default(now())
-  duration     Int?     // duration in seconds
-  referrer     String?  // where the user came from
-  bounced      Boolean  @default(false) // true if the user left without visiting other pages
-  
-  visitorId    String
-  visitor      Visitor  @relation(fields: [visitorId], references: [id], onDelete: Cascade)
-
-  @@index([url])
-  @@index([timestamp])
-  @@map("page_visits")
+enum NotificationType {
+  ORDER_STATUS
+  PAYMENT_STATUS
+  GENERAL
 }
 
-model Visitor {
-  id           String     @id @default(cuid())
-  sessionId    String     @unique // unique identifier for the visitor's session
-  ipAddress    String?    // anonymized IP address
-  userAgent    String?    // browser and OS information
-  device       DeviceType @default(UNKNOWN)
-  country      String?    // country determined from IP
-  firstVisit   DateTime   @default(now())
-  lastVisit    DateTime   @default(now())
-  
-  pageVisits   PageVisit[]
-
-  @@index([sessionId])
-  @@index([device])
-  @@map("visitors")
+enum NotificationStatus {
+  UNREAD
+  READ
 }
 
 enum DeviceType {
@@ -247,24 +304,4 @@ enum DeviceType {
   MOBILE
   TABLET
   UNKNOWN
-}
-
-model HeroSlide {
-  id                String   @id @default(cuid())
-  title             String
-  subtitle          String?
-  description       String   @db.Text
-  backgroundImage   String?  // URL gambar background
-  backgroundColor   String?  // Warna background (hex/gradient)
-  textColor         String   @default("#ffffff") // Warna teks
-  primaryButtonText String   
-  primaryButtonLink String
-  secondaryButtonText String?
-  secondaryButtonLink String?
-  order             Int      @default(0) // Urutan slide
-  isActive          Boolean  @default(true) // Status aktif/nonaktif
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
-  
-  @@map("hero_slides")
 }
