@@ -3,10 +3,33 @@ import { writeFile, mkdir } from 'fs/promises'
 import { join } from 'path'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
+import { UTApi } from 'uploadthing/server'
 
-async function uploadToUploadthink(buffer: Buffer, fileName: string): Promise<string> {
-  // Fallback: return URL lokal agar proses input produk tetap berjalan
-  return `/uploads/${fileName}`;
+const utapi = new UTApi()
+
+async function uploadToUploadthing(buffer: Buffer, fileName: string): Promise<string> {
+  try {
+    // Create a File object from buffer
+    const file = new File([buffer], fileName, {
+      type: `image/${fileName.split('.').pop()}`
+    })
+
+    // Upload to UploadThing
+    const response = await utapi.uploadFiles([file])
+    
+    if (response[0]?.data?.url) {
+      console.log(`✅ Image uploaded to UploadThing: ${response[0].data.url}`)
+      return response[0].data.url
+    } else {
+      console.error('❌ UploadThing upload failed:', response[0]?.error)
+      // Fallback to local storage
+      return `/uploads/${fileName}`
+    }
+  } catch (error) {
+    console.error('❌ UploadThing error:', error)
+    // Fallback to local storage
+    return `/uploads/${fileName}`
+  }
 }
 
 export async function POST(req: NextRequest) {
@@ -63,9 +86,9 @@ export async function POST(req: NextRequest) {
       const filePath = join(uploadsDir, fileName)
       await writeFile(filePath, buffer)
 
-      // Upload to uploadthink and get cloud URL
-      const uploadthinkUrl = await uploadToUploadthink(buffer, fileName)
-      urls.push(uploadthinkUrl)
+      // Upload to UploadThing and get cloud URL
+      const uploadthingUrl = await uploadToUploadthing(buffer, fileName)
+      urls.push(uploadthingUrl)
     }
 
     return NextResponse.json({ urls })
