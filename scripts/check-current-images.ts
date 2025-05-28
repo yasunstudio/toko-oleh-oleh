@@ -34,9 +34,9 @@ async function checkProductImages() {
     console.log(`📦 Found ${products.length} products\n`)
     
     // Analyze image URLs
-    const localImages = []
-    const cloudImages = []
-    const brokenImages = []
+    const localImages: any[] = []
+    const cloudImages: any[] = []
+    const brokenImages: any[] = []
     
     products.forEach(product => {
       if (!product.image) {
