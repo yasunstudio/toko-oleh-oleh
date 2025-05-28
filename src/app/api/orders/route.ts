@@ -130,6 +130,31 @@ export async function POST(req: NextRequest) {
         where: { userId: session.user.id }
       })
 
+      // Create admin notification for new order
+      const adminUsers = await tx.user.findMany({
+        where: { role: 'ADMIN' },
+        select: { id: true }
+      })
+
+      // Notify all admin users about the new order
+      for (const admin of adminUsers) {
+        await tx.notification.create({
+          data: {
+            userId: admin.id,
+            title: 'Pesanan Baru Masuk',
+            message: `Pesanan baru ${orderNumber} dari customer perlu dikonfirmasi`,
+            type: 'ORDER_STATUS',
+            orderId: newOrder.id,
+            data: JSON.stringify({
+              orderNumber,
+              customerName: session.user.name,
+              totalAmount,
+              status: 'PENDING'
+            })
+          }
+        })
+      }
+
       return newOrder
     })
 
