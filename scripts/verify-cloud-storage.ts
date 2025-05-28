@@ -72,7 +72,7 @@ async function verifyCloudStorage() {
   if (workingImages === totalTested) {
     console.log(`\n🎉 UploadThing cloud storage is working perfectly!`)
     console.log(`🚀 Railway deployment images should be accessible!`)
-    console.log(`🌐 Check production site: https://oleh-oleh-production.up.railway.app`)
+    console.log(`🌐 Check production site: https://oleh-oleh-production-ce0f.up.railway.app`)
   } else if (workingImages > 0) {
     console.log(`\n⚠️  Partial success - some images are working`)
     console.log(`🔍 This might indicate temporary network issues`)

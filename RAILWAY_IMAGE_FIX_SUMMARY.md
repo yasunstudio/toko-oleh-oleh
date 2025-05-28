@@ -108,7 +108,7 @@ railway up --detach
 
 ## Status: 🎯 COMPLETELY RESOLVED
 
-The Railway deployment image issue has been **100% resolved**. All images are now stored in UploadThing cloud storage and working perfectly on the production application at https://oleh-oleh-production.up.railway.app.
+The Railway deployment image issue has been **100% resolved**. All images are now stored in UploadThing cloud storage and working perfectly on the production application at https://oleh-oleh-production-ce0f.up.railway.app.
 
 **Date Resolved**: May 27, 2025
 **Total Images Fixed**: 33 images  

@@ -3,7 +3,7 @@
 ## Application Status: ✅ LIVE & OPERATIONAL
 
 **Deployment Date**: May 27, 2025  
-**Application URL**: https://oleh-oleh-production.up.railway.app  
+**Application URL**: https://oleh-oleh-production-ce0f.up.railway.app  
 **Status**: Successfully deployed and running
 
 ---
