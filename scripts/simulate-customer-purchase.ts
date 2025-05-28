@@ -69,7 +69,7 @@ async function simulateCustomerPurchase() {
       where: { role: 'ADMIN' }
     })
 
-    const beforeCounts = {}
+    const beforeCounts: Record<string, number> = {}
     for (const admin of adminUsers) {
       const count = await prisma.notification.count({
         where: { userId: admin.id }
@@ -160,8 +160,8 @@ async function simulateCustomerPurchase() {
     console.log(`✅ Order created: ${order.orderNumber}`)
 
     // Check admin notifications after order
-    const afterCounts = {}
-    const newNotifications = []
+    const afterCounts: Record<string, number> = {}
+    const newNotifications: any[] = []
     
     for (const admin of adminUsers) {
       const count = await prisma.notification.count({
