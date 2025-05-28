@@ -608,6 +608,202 @@ async function main() {
     console.log("🛒 Sample cart items created");
   }
 
+  // Add Hero Slides
+  console.log("🎠 Creating hero slides...");
+  await prisma.heroSlide.createMany({
+    data: [
+      {
+        title: "Selamat Datang di Toko Oleh-Oleh Nusantara",
+        subtitle: "Jelajahi Kelezatan Autentik dari Seluruh Indonesia",
+        description: "Temukan beragam produk oleh-oleh terbaik dari berbagai daerah di Indonesia. Dari sambal tradisional hingga camilan khas nusantara.",
+        backgroundImage: null,
+        backgroundColor: 'linear-gradient(to right, #f97316, #dc2626)',
+        textColor: '#ffffff',
+        primaryButtonText: "Jelajahi Produk",
+        primaryButtonLink: "/products",
+        secondaryButtonText: "Lihat Semua",
+        secondaryButtonLink: "/categories",
+        isActive: true,
+        order: 1
+      },
+      {
+        title: "Rasa Autentik Nusantara",
+        subtitle: "Cita Rasa Tradisional yang Terjaga",
+        description: "Setiap produk dipilih langsung dari produsen lokal terpercaya untuk menjamin kualitas dan keaslian rasa.",
+        backgroundImage: null,
+        backgroundColor: 'linear-gradient(to right, #10b981, #0d9488)',
+        textColor: '#ffffff',
+        primaryButtonText: "Lihat Kategori",
+        primaryButtonLink: "/categories",
+        secondaryButtonText: "Cara Pesan",
+        secondaryButtonLink: "/about",
+        isActive: true,
+        order: 2
+      },
+      {
+        title: "Gratis Ongkir Se-Indonesia",
+        subtitle: "Pengiriman Aman & Terpercaya",
+        description: "Dapatkan gratis ongkos kirim untuk pembelian minimal Rp 100.000. Produk dikemas dengan aman dan higienis.",
+        backgroundImage: null,
+        backgroundColor: 'linear-gradient(to right, #3b82f6, #1d4ed8)',
+        textColor: '#ffffff',
+        primaryButtonText: "Belanja Sekarang",
+        primaryButtonLink: "/products",
+        secondaryButtonText: "Info Pengiriman",
+        secondaryButtonLink: "/shipping",
+        isActive: true,
+        order: 3
+      }
+    ]
+  });
+  console.log("🎠 Hero slides created");
+
+  // Add Settings
+  console.log("⚙️ Creating settings...");
+  await prisma.setting.createMany({
+    data: [
+      { key: 'store_name', value: 'Toko Oleh-Oleh Nusantara' },
+      { key: 'store_description', value: 'Pusat oleh-oleh khas nusantara terlengkap dan terpercaya' },
+      { key: 'store_email', value: 'info@tokooleholeh.com' },
+      { key: 'store_phone', value: '+62 821 1234 5678' },
+      { key: 'store_address', value: 'Jl. Nusantara No. 123, Jakarta Pusat, DKI Jakarta' },
+      { key: 'min_order_amount', value: '25000' },
+      { key: 'free_shipping_min', value: '100000' },
+      { key: 'shipping_cost', value: '15000' },
+      { key: 'store_open_hours', value: '08:00 - 20:00 WIB' },
+      { key: 'whatsapp_number', value: '+6282112345678' },
+      { key: 'instagram_url', value: 'https://instagram.com/tokooleholeh' },
+      { key: 'facebook_url', value: 'https://facebook.com/tokooleholeh' },
+      { key: 'store_logo', value: '/uploads/store-logo.png' },
+      { key: 'currency', value: 'IDR' },
+      { key: 'tax_rate', value: '0' },
+      { key: 'maintenance_mode', value: 'false' },
+      { key: 'allow_registration', value: 'true' },
+      { key: 'email_notifications', value: 'true' },
+      { key: 'sms_notifications', value: 'false' },
+      { key: 'store_status', value: 'active' }
+    ]
+  });
+  console.log("⚙️ Settings created");
+
+  // Add Contact Messages
+  console.log("📧 Creating contact messages...");
+  await prisma.contact.createMany({
+    data: [
+      {
+        name: "Budi Santoso",
+        email: "budi@example.com",
+        phone: "+62 812 3456 7890",
+        message: "Apakah ada diskon untuk pembelian dalam jumlah besar? Saya ingin memesan untuk acara kantor.",
+        status: "PENDING"
+      },
+      {
+        name: "Sari Dewi",
+        email: "sari@example.com",
+        phone: "+62 856 7890 1234",
+        message: "Halo, saya ingin tanya tentang ketersediaan sambal roa. Apakah bisa dikirim ke Surabaya?",
+        status: "REPLIED"
+      },
+      {
+        name: "Ahmad Rahman",
+        email: "ahmad@example.com",
+        phone: "+62 878 5432 1098",
+        message: "Mohon info cara menjadi reseller produk-produk oleh-oleh ini. Terima kasih.",
+        status: "PENDING"
+      }
+    ]
+  });
+  console.log("📧 Contact messages created");
+
+  // Add Notifications
+  console.log("🔔 Creating notifications...");
+  await prisma.notification.createMany({
+    data: [
+      {
+        userId: customer1.id,
+        title: "Selamat Datang!",
+        message: "Terima kasih telah bergabung dengan Toko Oleh-Oleh Nusantara. Jelajahi produk terbaik kami!",
+        type: "GENERAL",
+        status: "UNREAD"
+      },
+      {
+        userId: customer1.id,
+        title: "Promo Spesial",
+        message: "Dapatkan diskon 15% untuk pembelian pertama dengan kode WELCOME15",
+        type: "GENERAL",
+        status: "UNREAD"
+      },
+      {
+        userId: customer2.id,
+        title: "Pesanan Berhasil",
+        message: "Pesanan Anda telah berhasil diproses dan akan segera dikirim",
+        type: "ORDER_STATUS",
+        status: "READ"
+      }
+    ]
+  });
+  console.log("🔔 Notifications created");
+
+  // Add Sample Visitor Data
+  console.log("👁️ Creating visitor data...");
+  const today = new Date();
+  const visitorData = [];
+
+  // Generate visitor data for the last 7 days
+  for (let i = 6; i >= 0; i--) {
+    const date = new Date(today);
+    date.setDate(date.getDate() - i);
+    
+    // Generate 3-10 random visitors per day
+    const visitorCount = Math.floor(Math.random() * 8) + 3;
+    
+    for (let j = 0; j < visitorCount; j++) {
+      const hour = Math.floor(Math.random() * 24);
+      const minute = Math.floor(Math.random() * 60);
+      const visitTime = new Date(date);
+      visitTime.setHours(hour, minute, 0, 0);
+
+      visitorData.push({
+        sessionId: `session_${Date.now()}_${i}_${j}`,
+        ipAddress: `192.168.1.${Math.floor(Math.random() * 254) + 1}`,
+        userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+        country: "Indonesia",
+        city: ["Jakarta", "Surabaya", "Bandung", "Medan", "Semarang"][Math.floor(Math.random() * 5)],
+        createdAt: visitTime
+      });
+    }
+  }
+
+  await prisma.visitor.createMany({ data: visitorData });
+  console.log(`👁️ Created ${visitorData.length} visitors`);
+
+  // Add Sample Page Visits
+  console.log("📄 Creating page visits...");
+  const visitors = await prisma.visitor.findMany();
+  const pages = ['/', '/products', '/categories', '/about', '/contact'];
+  const pageVisitData = [];
+
+  visitors.forEach(visitor => {
+    // Each visitor visits 1-3 pages
+    const pageCount = Math.floor(Math.random() * 3) + 1;
+    const visitedPages = pages.sort(() => 0.5 - Math.random()).slice(0, pageCount);
+    
+    visitedPages.forEach((page, index) => {
+      const visitTime = new Date(visitor.createdAt);
+      visitTime.setMinutes(visitTime.getMinutes() + (index * 2)); // 2 minutes between pages
+      
+      pageVisitData.push({
+        visitorId: visitor.id,
+        page: page,
+        duration: Math.floor(Math.random() * 300) + 30, // 30-330 seconds
+        createdAt: visitTime
+      });
+    });
+  });
+
+  await prisma.pageVisit.createMany({ data: pageVisitData });
+  console.log(`📄 Created ${pageVisitData.length} page visits`);
+
   console.log("✅ Seeding completed successfully!");
   console.log(`
 📊 Database seeded with:
