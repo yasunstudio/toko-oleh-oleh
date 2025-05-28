@@ -48,5 +48,5 @@ npx tsx prisma/seed-hero-slides.ts
 
 echo "🎉 Railway database setup completed!"
 echo ""
-echo "🔗 Application URL: https://scintillating-courage-production-6c8e.up.railway.app"
+echo "🔗 Application URL: https://oleh-oleh-production-ce0f.up.railway.app"
 echo "🔑 Admin login: admin@tokooleholeh.com / admin123"

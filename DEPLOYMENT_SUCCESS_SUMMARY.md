@@ -18,7 +18,7 @@
 ### Services Deployed
 1. **Web Service**: `toko-service`
    - Next.js application running on Node.js
-   - Domain: toko-service-production.up.railway.app
+   - Domain: oleh-oleh-production-ce0f.up.railway.app
    - Health Check: ✅ `/api/health` responding correctly
 
 2. **MySQL Database**: `MySQL`

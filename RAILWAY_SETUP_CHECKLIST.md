@@ -5,7 +5,7 @@
 **Status: ✅ COMPLETED SUCCESSFULLY**
 
 ### Current Deployment Information:
-- **Application URL**: https://toko-service-production.up.railway.app
+- **Application URL**: https://oleh-oleh-production-ce0f.up.railway.app
 - **Railway Project**: toko-oleh-oleh  
 - **Environment**: production
 - **Database**: MySQL (Railway managed)
