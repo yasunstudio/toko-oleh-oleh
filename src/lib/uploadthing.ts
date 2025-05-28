@@ -29,6 +29,29 @@ export const ourFileRouter = {
       // !!! Whatever is returned here is sent to the clientside `onClientUploadComplete` callback
       return { uploadedBy: metadata.userId, url: file.url };
     }),
+
+  // Payment proof uploader - for customers to upload payment proof
+  paymentProofUploader: f({ image: { maxFileSize: "4MB", maxFileCount: 1 } })
+    .middleware(async ({ req }) => {
+      // This code runs on your server before upload
+      const session = await getServerSession(authOptions);
+
+      // If you throw, the user will not be able to upload
+      if (!session) {
+        throw new Error("Unauthorized - Please login first");
+      }
+
+      // Allow any authenticated user to upload payment proof
+      return { userId: session.user.id, userRole: session.user.role };
+    })
+    .onUploadComplete(async ({ metadata, file }) => {
+      // This code RUNS ON YOUR SERVER after upload
+      console.log("Payment proof upload complete for userId:", metadata.userId);
+      console.log("Payment proof file url:", file.url);
+
+      // !!! Whatever is returned here is sent to the clientside `onClientUploadComplete` callback
+      return { uploadedBy: metadata.userId, url: file.url };
+    }),
 } satisfies FileRouter;
 
 export type OurFileRouter = typeof ourFileRouter;

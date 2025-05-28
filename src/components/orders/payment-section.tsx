@@ -10,6 +10,7 @@ import { useToast } from '@/hooks/use-toast'
 import { Upload, CheckCircle, XCircle, Clock } from 'lucide-react'
 import { Order } from '@/types'
 import Image from 'next/image'
+import { useUploadThing } from '@/lib/uploadthing-client'
 
 interface PaymentSectionProps {
   order: Order
@@ -21,6 +22,27 @@ export function PaymentSection({ order, onUpdate }: PaymentSectionProps) {
   const [uploading, setUploading] = useState(false)
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
 
+  // Initialize UploadThing hook for payment proof uploads
+  const { startUpload, isUploading } = useUploadThing("paymentProofUploader", {
+    onClientUploadComplete: (res) => {
+      // Upload completed successfully
+      console.log("Upload completed:", res)
+      if (res && res[0]?.url) {
+        // Send the cloud URL to our payment API
+        handlePaymentProofSubmit(res[0].url)
+      }
+    },
+    onUploadError: (error: Error) => {
+      console.error("Upload error:", error)
+      toast({
+        title: 'Upload Gagal',
+        description: error.message || 'Gagal mengupload bukti pembayaran',
+        variant: 'destructive'
+      })
+      setUploading(false)
+    },
+  })
+
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('id-ID', {
       style: 'currency',
@@ -28,13 +50,50 @@ export function PaymentSection({ order, onUpdate }: PaymentSectionProps) {
     }).format(price)
   }
 
+  // Send payment proof URL to our API after successful upload to cloud
+  const handlePaymentProofSubmit = async (paymentProofUrl: string) => {
+    try {
+      const response = await fetch(`/api/orders/${order.id}/payment`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ paymentProofUrl })
+      })
+
+      if (response.ok) {
+        toast({
+          title: 'Berhasil!',
+          description: 'Bukti pembayaran berhasil diupload'
+        })
+        setSelectedFile(null)
+        onUpdate()
+      } else {
+        const data = await response.json()
+        toast({
+          title: 'Gagal',
+          description: data.error || 'Gagal menyimpan bukti pembayaran',
+          variant: 'destructive'
+        })
+      }
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Terjadi kesalahan saat menyimpan bukti pembayaran',
+        variant: 'destructive'
+      })
+    } finally {
+      setUploading(false)
+    }
+  }
+
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
-      if (file.size > 5 * 1024 * 1024) { // 5MB limit
+      if (file.size > 4 * 1024 * 1024) { // 4MB limit to match UploadThing config
         toast({
           title: 'File terlalu besar',
-          description: 'Ukuran file maksimal 5MB',
+          description: 'Ukuran file maksimal 4MB',
           variant: 'destructive'
         })
         return
@@ -65,36 +124,15 @@ export function PaymentSection({ order, onUpdate }: PaymentSectionProps) {
 
     setUploading(true)
     try {
-      const formData = new FormData()
-      formData.append('paymentProof', selectedFile)
-
-      const response = await fetch(`/api/orders/${order.id}/payment`, {
-        method: 'POST',
-        body: formData
-      })
-
-      if (response.ok) {
-        toast({
-          title: 'Berhasil!',
-          description: 'Bukti pembayaran berhasil diupload'
-        })
-        setSelectedFile(null)
-        onUpdate()
-      } else {
-        const data = await response.json()
-        toast({
-          title: 'Gagal',
-          description: data.error || 'Gagal mengupload bukti pembayaran',
-          variant: 'destructive'
-        })
-      }
+      // Upload to UploadThing cloud storage
+      await startUpload([selectedFile])
     } catch (error) {
+      console.error('Upload error:', error)
       toast({
         title: 'Error',
-        description: 'Terjadi kesalahan',
+        description: 'Terjadi kesalahan saat upload',
         variant: 'destructive'
       })
-    } finally {
       setUploading(false)
     }
   }
@@ -206,7 +244,7 @@ export function PaymentSection({ order, onUpdate }: PaymentSectionProps) {
                   className="mt-1 file:text-primary file:font-medium"
                 />
                 <p className="text-xs text-muted-foreground mt-1">
-                  Format: JPG, PNG, maksimal 5MB
+                  Format: JPG, PNG, maksimal 4MB
                 </p>
               </div>
 
@@ -218,11 +256,11 @@ export function PaymentSection({ order, onUpdate }: PaymentSectionProps) {
 
               <Button
                 onClick={handleUploadPayment}
-                disabled={!selectedFile || uploading}
+                disabled={!selectedFile || uploading || isUploading}
                 className="w-full"
               >
                 <Upload className="h-4 w-4 mr-2" />
-                {uploading ? 'Mengupload...' : 'Upload Bukti Pembayaran'}
+                {uploading || isUploading ? 'Mengupload...' : 'Upload Bukti Pembayaran'}
               </Button>
             </div>
           </CardContent>

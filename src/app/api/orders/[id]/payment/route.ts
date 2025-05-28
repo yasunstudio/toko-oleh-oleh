@@ -2,8 +2,6 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/db'
-import { writeFile } from 'fs/promises'
-import { join } from 'path'
 
 export async function POST(
   req: NextRequest,
@@ -20,12 +18,11 @@ export async function POST(
       )
     }
 
-    const formData = await req.formData()
-    const file = formData.get('paymentProof') as File
+    const { paymentProofUrl } = await req.json()
 
-    if (!file) {
+    if (!paymentProofUrl) {
       return NextResponse.json(
-        { error: 'File tidak ditemukan' },
+        { error: 'URL bukti pembayaran tidak ditemukan' },
         { status: 400 }
       )
     }
@@ -45,45 +42,45 @@ export async function POST(
       )
     }
 
-    // Check file type and size
-    if (!file.type.startsWith('image/')) {
-      return NextResponse.json(
-        { error: 'File harus berupa gambar' },
-        { status: 400 }
-      )
-    }
-
-    if (file.size > 5 * 1024 * 1024) { // 5MB
-      return NextResponse.json(
-        { error: 'Ukuran file maksimal 5MB' },
-        { status: 400 }
-      )
-    }
-
-    // Save file
-    const bytes = await file.arrayBuffer()
-    const buffer = Buffer.from(bytes)
-    
-    const fileName = `payment-${order.id}-${Date.now()}.${file.type.split('/')[1]}`
-    const filePath = join(process.cwd(), 'public', 'uploads', fileName)
-    
-    await writeFile(filePath, buffer)
-
-    // Update order
+    // Update order with payment proof URL from UploadThing
     const updatedOrder = await prisma.order.update({
       where: { id },
       data: {
-        paymentProof: `/uploads/${fileName}`,
+        paymentProof: paymentProofUrl,
         paymentStatus: 'PAID'
       }
     })
 
+    // Create admin notification for payment proof upload
+    try {
+      // Create notifications for all admin users
+      const adminUsers = await prisma.user.findMany({
+        where: { role: 'ADMIN' }
+      })
+
+      for (const admin of adminUsers) {
+        await prisma.notification.create({
+          data: {
+            type: 'PAYMENT_STATUS',
+            title: 'Bukti Pembayaran Baru',
+            message: `Bukti pembayaran untuk pesanan #${order.orderNumber} telah diupload dan menunggu verifikasi.`,
+            status: 'UNREAD',
+            userId: admin.id,
+            orderId: order.id
+          }
+        })
+      }
+    } catch (notificationError) {
+      console.error('Failed to create payment upload notification:', notificationError)
+      // Don't fail the main operation if notification creation fails
+    }
+
     return NextResponse.json(updatedOrder)
 
   } catch (error) {
-    console.error('Payment upload error:', error)
+    console.error('Payment update error:', error)
     return NextResponse.json(
-      { error: 'Gagal mengupload bukti pembayaran' },
+      { error: 'Gagal memperbarui bukti pembayaran' },
       { status: 500 }
     )
   }
