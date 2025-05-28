@@ -33,6 +33,28 @@ const imageMapping: Record<string, string> = {
   '/uploads/yangko-pontianak.jpg': 'https://utfs.io/f/sPrFi2oXJxbUuLMMzJxbUQRpf2NtDm0qE7oLhcgCk6d4Msa',
   '/uploads/lemper-ikan.jpg': 'https://utfs.io/f/sPrFi2oXJxbUvKNLAJxbUQRpf2NtDm0qE7oLhcgCk6d4Msa',
 
+  // Missing mappings from seed data - mapping to existing UploadThing URLs
+  '/uploads/rendang-kering.jpg': 'https://utfs.io/f/sPrFi2oXJxbUZ0A4bJxbUQRpf2NtDm0qE7oLhcgCk6d4Msa',
+  '/uploads/abon-sapi.jpg': 'https://utfs.io/f/sPrFi2oXJxbUfEHkGnJxbUQRpf2NtDm0qE7oLhcgCk6d4Msa',
+  '/uploads/keripik-pisang.jpg': 'https://utfs.io/f/sPrFi2oXJxbU8JsXJTJxbUQRpf2NtDm0qE7oLhcgCk6d4Msa',
+  '/uploads/rempeyek-kacang.jpg': 'https://utfs.io/f/sPrFi2oXJxbUhJK8QJxbUQRpf2NtDm0qE7oLhcgCk6d4Msa',
+  '/uploads/keripik-tempe.jpg': 'https://utfs.io/f/sPrFi2oXJxbUmvdBdJxbUQRpf2NtDm0qE7oLhcgCk6d4Msa',
+  '/uploads/kerupuk-udang.jpg': 'https://utfs.io/f/sPrFi2oXJxbUYkL3dJxbUQRpf2NtDm0qE7oLhcgCk6d4Msa',
+  '/uploads/lapis-legit.jpg': 'https://utfs.io/f/sPrFi2oXJxbUj4L5vJxbUQRpf2NtDm0qE7oLhcgCk6d4Msa',
+  '/uploads/dodol-betawi.jpg': 'https://utfs.io/f/sPrFi2oXJxbUbvKNsJxbUQRpf2NtDm0qE7oLhcgCk6d4Msa',
+  '/uploads/bika-ambon.jpg': 'https://utfs.io/f/sPrFi2oXJxbUgOgEKJxbUQRpf2NtDm0qE7oLhcgCk6d4Msa',
+  '/uploads/kopi-luwak.jpg': 'https://utfs.io/f/sPrFi2oXJxbUcK7aqJxbUQRpf2NtDm0qE7oLhcgCk6d4Msa',
+  '/uploads/teh-pucuk.jpg': 'https://utfs.io/f/sPrFi2oXJxbUdSY3BJxbUQRpf2NtDm0qE7oLhcgCk6d4Msa',
+  '/uploads/wedang-jahe.jpg': 'https://utfs.io/f/sPrFi2oXJxbUeJHaFJxbUQRpf2NtDm0qE7oLhcgCk6d4Msa',
+  '/uploads/secang.jpg': 'https://utfs.io/f/sPrFi2oXJxbUaOgz7JxbUQRpf2NtDm0qE7oLhcgCk6d4Msa',
+  '/uploads/sambal-oelek.jpg': 'https://utfs.io/f/sPrFi2oXJxbURiTqmm3HWL8TGk7o6VjPAaNfYStue1dK4hMp',
+  '/uploads/bumbu-rendang.jpg': 'https://utfs.io/f/sPrFi2oXJxbUR0kEHj3HWL8TGk7o6VjPAaNfYStue1dK4hMp',
+  '/uploads/bumbu-gudeg.jpg': 'https://utfs.io/f/sPrFi2oXJxbU4JKJEvJxbUQRpf2NtDm0qE7oLhcgCk6d4Msa',
+  '/uploads/kemiri-bakar.jpg': 'https://utfs.io/f/sPrFi2oXJxbUWGK3NeJxbUQRpf2NtDm0qE7oLhcgCk6d4Msa',
+  '/uploads/gula-kelapa.jpg': 'https://utfs.io/f/sPrFi2oXJxbUJOdPc3JxbUQRpf2NtDm0qE7oLhcgCk6d4Msa',
+  '/uploads/gula-aren.jpg': 'https://utfs.io/f/sPrFi2oXJxbUnJK6wJxbUQRpf2NtDm0qE7oLhcgCk6d4Msa',
+  '/uploads/sambal-matah.jpg': 'https://utfs.io/f/sPrFi2oXJxbURiTqmm3HWL8TGk7o6VjPAaNfYStue1dK4hMp',
+
   // Category images
   '/uploads/categories/sambal-saus.jpg': 'https://utfs.io/f/sPrFi2oXJxbUGjK8YJxbUQRpf2NtDm0qE7oLhcgCk6d4Msa',
   '/uploads/categories/keripik-snack.jpg': 'https://utfs.io/f/sPrFi2oXJxbUHdL9ZJxbUQRpf2NtDm0qE7oLhcgCk6d4Msa',
@@ -41,7 +63,17 @@ const imageMapping: Record<string, string> = {
   '/uploads/categories/kue-tradisional.jpg': 'https://utfs.io/f/sPrFi2oXJxbULgO3CJxbUQRpf2NtDm0qE7oLhcgCk6d4Msa',
   '/uploads/categories/minuman-tradisional.jpg': 'https://utfs.io/f/sPrFi2oXJxbUMhP4DJxbUQRpf2NtDm0qE7oLhcgCk6d4Msa',
   '/uploads/categories/olahan-ikan.jpg': 'https://utfs.io/f/sPrFi2oXJxbUNiQ5EJxbUQRpf2NtDm0qE7oLhcgCk6d4Msa',
-  '/uploads/categories/bumbu-rempah.jpg': 'https://utfs.io/f/sPrFi2oXJxbUOjR6FJxbUQRpf2NtDm0qE7oLhcgCk6d4Msa'
+  '/uploads/categories/bumbu-rempah.jpg': 'https://utfs.io/f/sPrFi2oXJxbUOjR6FJxbUQRpf2NtDm0qE7oLhcgCk6d4Msa',
+  
+  // Missing category images from seed data
+  '/uploads/category-makanan-kering.jpg': 'https://utfs.io/f/sPrFi2oXJxbUKfN2BJxbUQRpf2NtDm0qE7oLhcgCk6d4Msa',
+  '/uploads/category-makanan-basah.jpg': 'https://utfs.io/f/sPrFi2oXJxbUIeM1AJxbUQRpf2NtDm0qE7oLhcgCk6d4Msa',
+  '/uploads/category-keripik.jpg': 'https://utfs.io/f/sPrFi2oXJxbUHdL9ZJxbUQRpf2NtDm0qE7oLhcgCk6d4Msa',
+  '/uploads/category-minuman.jpg': 'https://utfs.io/f/sPrFi2oXJxbUMhP4DJxbUQRpf2NtDm0qE7oLhcgCk6d4Msa',
+  '/uploads/category-kue-roti.jpg': 'https://utfs.io/f/sPrFi2oXJxbULgO3CJxbUQRpf2NtDm0qE7oLhcgCk6d4Msa',
+  '/uploads/category-bumbu.jpg': 'https://utfs.io/f/sPrFi2oXJxbUOjR6FJxbUQRpf2NtDm0qE7oLhcgCk6d4Msa',
+  '/uploads/category-gula.jpg': 'https://utfs.io/f/sPrFi2oXJxbUGjK8YJxbUQRpf2NtDm0qE7oLhcgCk6d4Msa',
+  '/uploads/category-sambal.jpg': 'https://utfs.io/f/sPrFi2oXJxbUGjK8YJxbUQRpf2NtDm0qE7oLhcgCk6d4Msa'
 }
 
 export async function POST(request: NextRequest) {
@@ -76,7 +108,7 @@ export async function POST(request: NextRequest) {
     
     // Update category images
     for (const [localPath, cloudUrl] of Object.entries(imageMapping)) {
-      if (!localPath.startsWith('/uploads/categories/')) continue
+      if (!localPath.startsWith('/uploads/category')) continue
       
       const updateResult = await prisma.category.updateMany({
         where: { image: localPath },

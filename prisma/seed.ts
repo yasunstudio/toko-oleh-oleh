@@ -7,6 +7,13 @@ async function main() {
   console.log("🌱 Seeding database...");
 
   // Clean existing data
+  await prisma.pageVisit.deleteMany();
+  await prisma.visitor.deleteMany();
+  await prisma.notification.deleteMany();
+  await prisma.contact.deleteMany();
+  await prisma.setting.deleteMany();
+  await prisma.heroSlide.deleteMany();
+  await prisma.productImage.deleteMany();
   await prisma.orderItem.deleteMany();
   await prisma.order.deleteMany();
   await prisma.cartItem.deleteMany();
@@ -662,26 +669,26 @@ async function main() {
   console.log("⚙️ Creating settings...");
   await prisma.setting.createMany({
     data: [
-      { key: 'store_name', value: 'Toko Oleh-Oleh Nusantara' },
-      { key: 'store_description', value: 'Pusat oleh-oleh khas nusantara terlengkap dan terpercaya' },
-      { key: 'store_email', value: 'info@tokooleholeh.com' },
-      { key: 'store_phone', value: '+62 821 1234 5678' },
-      { key: 'store_address', value: 'Jl. Nusantara No. 123, Jakarta Pusat, DKI Jakarta' },
-      { key: 'min_order_amount', value: '25000' },
-      { key: 'free_shipping_min', value: '100000' },
-      { key: 'shipping_cost', value: '15000' },
-      { key: 'store_open_hours', value: '08:00 - 20:00 WIB' },
-      { key: 'whatsapp_number', value: '+6282112345678' },
-      { key: 'instagram_url', value: 'https://instagram.com/tokooleholeh' },
-      { key: 'facebook_url', value: 'https://facebook.com/tokooleholeh' },
-      { key: 'store_logo', value: '/uploads/store-logo.png' },
-      { key: 'currency', value: 'IDR' },
-      { key: 'tax_rate', value: '0' },
-      { key: 'maintenance_mode', value: 'false' },
-      { key: 'allow_registration', value: 'true' },
-      { key: 'email_notifications', value: 'true' },
-      { key: 'sms_notifications', value: 'false' },
-      { key: 'store_status', value: 'active' }
+      { category: 'general', key: 'store_name', value: 'Toko Oleh-Oleh Nusantara' },
+      { category: 'general', key: 'store_description', value: 'Pusat oleh-oleh khas nusantara terlengkap dan terpercaya' },
+      { category: 'general', key: 'store_email', value: 'info@tokooleholeh.com' },
+      { category: 'general', key: 'store_phone', value: '+62 821 1234 5678' },
+      { category: 'general', key: 'store_address', value: 'Jl. Nusantara No. 123, Jakarta Pusat, DKI Jakarta' },
+      { category: 'general', key: 'store_open_hours', value: '08:00 - 20:00 WIB' },
+      { category: 'general', key: 'whatsapp_number', value: '+6282112345678' },
+      { category: 'general', key: 'instagram_url', value: 'https://instagram.com/tokooleholeh' },
+      { category: 'general', key: 'facebook_url', value: 'https://facebook.com/tokooleholeh' },
+      { category: 'general', key: 'store_logo', value: '/uploads/store-logo.png' },
+      { category: 'general', key: 'currency', value: 'IDR' },
+      { category: 'general', key: 'store_status', value: 'active' },
+      { category: 'payment', key: 'min_order_amount', value: '25000' },
+      { category: 'payment', key: 'tax_rate', value: '0' },
+      { category: 'shipping', key: 'free_shipping_min', value: '100000' },
+      { category: 'shipping', key: 'shipping_cost', value: '15000' },
+      { category: 'security', key: 'maintenance_mode', value: 'false' },
+      { category: 'security', key: 'allow_registration', value: 'true' },
+      { category: 'email', key: 'email_notifications', value: 'true' },
+      { category: 'email', key: 'sms_notifications', value: 'false' }
     ]
   });
   console.log("⚙️ Settings created");
@@ -694,13 +701,15 @@ async function main() {
         name: "Budi Santoso",
         email: "budi@example.com",
         phone: "+62 812 3456 7890",
+        subject: "Diskon Pembelian Besar",
         message: "Apakah ada diskon untuk pembelian dalam jumlah besar? Saya ingin memesan untuk acara kantor.",
-        status: "PENDING"
+        status: "UNREAD"
       },
       {
         name: "Sari Dewi",
         email: "sari@example.com",
         phone: "+62 856 7890 1234",
+        subject: "Ketersediaan Sambal Roa",
         message: "Halo, saya ingin tanya tentang ketersediaan sambal roa. Apakah bisa dikirim ke Surabaya?",
         status: "REPLIED"
       },
@@ -708,8 +717,9 @@ async function main() {
         name: "Ahmad Rahman",
         email: "ahmad@example.com",
         phone: "+62 878 5432 1098",
+        subject: "Info Menjadi Reseller",
         message: "Mohon info cara menjadi reseller produk-produk oleh-oleh ini. Terima kasih.",
-        status: "PENDING"
+        status: "UNREAD"
       }
     ]
   });
@@ -767,8 +777,9 @@ async function main() {
         sessionId: `session_${Date.now()}_${i}_${j}`,
         ipAddress: `192.168.1.${Math.floor(Math.random() * 254) + 1}`,
         userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-        country: "Indonesia",
-        city: ["Jakarta", "Surabaya", "Bandung", "Medan", "Semarang"][Math.floor(Math.random() * 5)],
+        device: "DESKTOP",
+        firstVisit: visitTime,
+        lastVisit: visitTime,
         createdAt: visitTime
       });
     }
@@ -794,9 +805,10 @@ async function main() {
       
       pageVisitData.push({
         visitorId: visitor.id,
-        page: page,
+        url: page,
+        pageTitle: page === '/' ? 'Beranda' : page.replace('/', '').charAt(0).toUpperCase() + page.slice(2),
         duration: Math.floor(Math.random() * 300) + 30, // 30-330 seconds
-        createdAt: visitTime
+        timestamp: visitTime
       });
     });
   });
