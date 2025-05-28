@@ -7,7 +7,7 @@ import { UTApi } from 'uploadthing/server'
 
 const utapi = new UTApi()
 
-async function uploadToUploadthing(buffer: Buffer, fileName: string): Promise<string> {
+async function uploadToUploadthing(buffer: Buffer, fileName: string): Promise<string | null> {
   try {
     // Create a File object from buffer
     const file = new File([buffer], fileName, {
@@ -22,22 +22,11 @@ async function uploadToUploadthing(buffer: Buffer, fileName: string): Promise<st
       return response[0].data.url
     } else {
       console.error('❌ UploadThing upload failed:', response[0]?.error)
-      // Fallback to local storage
-      return `/uploads/${fileName}`
+      return null
     }
   } catch (error) {
     console.error('❌ UploadThing error:', error)
-    // Fallback to local storage
-    return `/uploads/${fileName}`
-  }
-}
-
-async function validateImageUrl(url: string): Promise<boolean> {
-  try {
-    const response = await fetch(url, { method: 'HEAD' });
-    return response.ok && response.headers.get('content-type')?.startsWith('image/') === true;
-  } catch {
-    return false;
+    return null
   }
 }
 
@@ -88,7 +77,7 @@ export async function POST(req: NextRequest) {
         )
       }
 
-      // Save file
+      // Save file locally as backup
       const bytes = await file.arrayBuffer()
       const buffer = Buffer.from(bytes)
       const fileName = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}.${file.type.split('/')[1]}`
@@ -97,13 +86,16 @@ export async function POST(req: NextRequest) {
 
       // Upload to UploadThing and get cloud URL
       const uploadthingUrl = await uploadToUploadthing(buffer, fileName);
-      const isValid = await validateImageUrl(uploadthingUrl);
-
-      if (isValid) {
+      
+      if (uploadthingUrl) {
+        // Use UploadThing URL directly (trust the response)
         urls.push(uploadthingUrl);
+        console.log(`✅ Successfully uploaded: ${uploadthingUrl}`);
       } else {
-        console.warn(`Invalid image URL: ${uploadthingUrl}. Using placeholder.`);
-        urls.push('/placeholder.jpg');
+        // If UploadThing fails, use local URL as fallback
+        const localUrl = `/uploads/${fileName}`;
+        urls.push(localUrl);
+        console.log(`⚠️ Using local fallback: ${localUrl}`);
       }
     }
 
