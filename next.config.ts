@@ -55,7 +55,7 @@ const nextConfig: NextConfig = {
               "style-src 'self' 'unsafe-inline'",
               "img-src 'self' data: https: http:",
               "font-src 'self' data:",
-              "connect-src 'self'",
+              "connect-src 'self' https://*.uploadthing.com https://*.ingest.uploadthing.com",
               "frame-src 'self' https://www.google.com https://*.google.com",
               "frame-ancestors 'none'",
             ].join('; '),
