@@ -53,31 +53,52 @@ export function CustomUploadThing({
         message: error.message,
         stack: error.stack,
         name: error.name,
-        cause: (error as any).cause
+        cause: (error as any).cause,
+        code: (error as any).code,
+        data: (error as any).data
       });
+      
       setIsUploading(false);
       onUploadError?.(error);
       
       // Enhanced error messages for common issues
-      let errorMessage = error.message || "Terjadi kesalahan saat upload";
+      let errorMessage = "Terjadi kesalahan saat upload";
+      let debugInfo = "";
       
       if (error.message?.includes("Unauthorized") || error.message?.includes("UNAUTHORIZED")) {
         errorMessage = "Anda harus login sebagai admin untuk mengupload gambar";
       } else if (error.message?.includes("FORBIDDEN")) {
         errorMessage = "Akses ditolak. Hanya admin yang dapat mengupload gambar";
       } else if (error.message?.includes("CORS")) {
-        errorMessage = "Masalah koneksi. Silakan coba lagi";
+        errorMessage = "Masalah koneksi CORS. Periksa konfigurasi server";
+        debugInfo = "CORS error - check server configuration";
       } else if (error.message?.includes("Network") || error.message?.includes("fetch")) {
         errorMessage = "Masalah jaringan. Periksa koneksi internet Anda";
+        debugInfo = "Network connectivity issue";
       } else if (error.message?.includes("Something went wrong")) {
-        errorMessage = "Terjadi kesalahan pada server. Silakan coba lagi dalam beberapa saat";
+        errorMessage = "Terjadi kesalahan pada server UploadThing";
+        debugInfo = `UploadThing server error - ${error.name}`;
+      } else if (error.name === "UploadThingError") {
+        errorMessage = "Error dari layanan UploadThing. Silakan coba lagi";
+        debugInfo = `UploadThingError: ${error.message}`;
+      } else {
+        errorMessage = error.message || "Error tidak diketahui";
+        debugInfo = `Unknown error: ${error.name || 'N/A'}`;
       }
+      
+      console.error("Upload error debug info:", debugInfo);
       
       toast({
         title: "Upload gagal",
         description: errorMessage,
         variant: "destructive",
       });
+    },
+    onUploadBegin: (name) => {
+      console.log("Upload begin for file:", name);
+    },
+    onUploadProgress: (progress) => {
+      console.log("Upload progress:", progress);
     },
   });
 
