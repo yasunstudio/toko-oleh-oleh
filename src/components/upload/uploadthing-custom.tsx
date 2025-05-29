@@ -48,7 +48,7 @@ export function CustomUploadThing({
       }
     },
     onUploadError: (error) => {
-      console.error("Custom UploadThing upload error:", error);
+      console.error("🚨 UploadThing Upload Error:", error);
       console.error("Error details:", {
         message: error.message,
         stack: error.stack,
@@ -65,10 +65,13 @@ export function CustomUploadThing({
       let errorMessage = "Terjadi kesalahan saat upload";
       let debugInfo = "";
       
-      if (error.message?.includes("Unauthorized") || error.message?.includes("UNAUTHORIZED")) {
-        errorMessage = "Anda harus login sebagai admin untuk mengupload gambar";
-      } else if (error.message?.includes("FORBIDDEN")) {
-        errorMessage = "Akses ditolak. Hanya admin yang dapat mengupload gambar";
+      // Check for specific error patterns
+      if (error.message?.includes("Authentication required")) {
+        errorMessage = "Login sebagai admin diperlukan untuk upload";
+        debugInfo = "Authentication error";
+      } else if (error.message?.includes("Admin access required")) {
+        errorMessage = "Akses ditolak. Hanya admin yang dapat mengupload";
+        debugInfo = "Authorization error - admin required";
       } else if (error.message?.includes("CORS")) {
         errorMessage = "Masalah koneksi CORS. Periksa konfigurasi server";
         debugInfo = "CORS error - check server configuration";
@@ -76,17 +79,17 @@ export function CustomUploadThing({
         errorMessage = "Masalah jaringan. Periksa koneksi internet Anda";
         debugInfo = "Network connectivity issue";
       } else if (error.message?.includes("Something went wrong")) {
-        errorMessage = "Terjadi kesalahan pada server UploadThing";
+        errorMessage = "Server UploadThing mengalami masalah";
         debugInfo = `UploadThing server error - ${error.name}`;
       } else if (error.name === "UploadThingError") {
-        errorMessage = "Error dari layanan UploadThing. Silakan coba lagi";
+        errorMessage = "Error dari layanan UploadThing";
         debugInfo = `UploadThingError: ${error.message}`;
       } else {
         errorMessage = error.message || "Error tidak diketahui";
-        debugInfo = `Unknown error: ${error.name || 'N/A'}`;
+        debugInfo = `${error.name}: ${error.message}`;
       }
       
-      console.error("Upload error debug info:", debugInfo);
+      console.error("🔍 Upload error debug info:", debugInfo);
       
       toast({
         title: "Upload gagal",

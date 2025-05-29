@@ -5,34 +5,36 @@ import { authOptions } from "@/lib/auth";
 // Validate environment variables
 const UPLOADTHING_SECRET = process.env.UPLOADTHING_SECRET;
 const UPLOADTHING_APP_ID = process.env.UPLOADTHING_APP_ID;
+const UPLOADTHING_TOKEN = process.env.UPLOADTHING_TOKEN;
+
+console.log("UploadThing Environment Check:", {
+  hasSecret: !!UPLOADTHING_SECRET,
+  hasAppId: !!UPLOADTHING_APP_ID,
+  hasToken: !!UPLOADTHING_TOKEN,
+  nodeEnv: process.env.NODE_ENV
+});
 
 if (!UPLOADTHING_SECRET || !UPLOADTHING_APP_ID) {
-  console.error("UploadThing environment variables missing:", {
-    hasSecret: !!UPLOADTHING_SECRET,
-    hasAppId: !!UPLOADTHING_APP_ID,
-    nodeEnv: process.env.NODE_ENV
-  });
+  console.error("❌ UploadThing environment variables missing!");
+  console.error("Required: UPLOADTHING_SECRET, UPLOADTHING_APP_ID");
+  console.error("Check your .env.local file");
 }
 
 const f = createUploadthing({
-  errorFormatter: (err) => {
-    console.error("UploadThing Server Error:", {
+  errorFormatter: (err: any) => {
+    console.error("🚨 UploadThing Error Formatter:", {
       message: err.message,
       code: err.code,
       data: err.data,
-      stack: err.stack,
-      cause: err.cause
+      stack: process.env.NODE_ENV === 'development' ? err.stack : undefined,
+      cause: err.cause,
+      timestamp: new Date().toISOString()
     });
     
-    // Return more detailed error information
+    // Return simplified error for client
     return {
-      message: err.message || "Upload failed on server",
-      code: err.code || "UNKNOWN_ERROR",
-      data: {
-        ...err.data,
-        timestamp: new Date().toISOString(),
-        environment: process.env.NODE_ENV
-      },
+      message: err.message || "Upload failed. Please try again.",
+      code: err.code || "UPLOAD_ERROR"
     };
   },
 });
@@ -47,58 +49,39 @@ export const ourFileRouter = {
       acl: "public-read"
     } 
   })
-    // Set permissions and file types for this FileRoute
     .middleware(async ({ req }) => {
+      console.log("🔍 UploadThing Middleware Starting...");
+      
       try {
-        console.log("=== UPLOAD MIDDLEWARE START ===");
-        console.log("Request headers:", {
-          authorization: req.headers.get("authorization") ? "Present" : "Missing",
-          cookie: req.headers.get("cookie") ? "Present" : "Missing",
-          origin: req.headers.get("origin"),
-          referer: req.headers.get("referer")
-        });
-        
-        // This code runs on your server before upload
+        // Get session
         const session = await getServerSession(authOptions);
         
-        console.log("Upload middleware - Session check:", {
+        console.log("Session Check:", {
           hasSession: !!session,
-          userRole: session?.user?.role,
           userId: session?.user?.id,
-          userEmail: session?.user?.email
+          userRole: session?.user?.role
         });
 
-        // If you throw, the user will not be able to upload
-        if (!session) {
-          console.error("Upload unauthorized: No session found");
-          const error = new Error("Unauthorized - Please login first");
-          (error as any).code = "UNAUTHORIZED";
-          throw error;
+        // Check if user is authenticated
+        if (!session?.user?.id) {
+          console.error("❌ Upload failed: No authenticated user");
+          throw new Error("Authentication required");
         }
         
+        // Check if user is admin (only for imageUploader)
         if (session.user.role !== 'ADMIN') {
-          console.error("Upload forbidden: User is not admin", {
-            userRole: session.user.role,
-            userId: session.user.id
-          });
-          const error = new Error("Unauthorized - Admin access required");
-          (error as any).code = "FORBIDDEN";
-          throw error;
+          console.error("❌ Upload failed: Admin access required");
+          throw new Error("Admin access required");
         }
 
-        console.log("Upload middleware - Authorization successful");
-        console.log("=== UPLOAD MIDDLEWARE END ===");
+        console.log("✅ Upload middleware passed - User authorized");
+        return { 
+          userId: session.user.id,
+          userRole: session.user.role 
+        };
         
-        // Whatever is returned here is accessible in onUploadComplete as `metadata`
-        return { userId: session.user.id, userRole: session.user.role };
       } catch (error) {
-        console.error("=== UPLOAD MIDDLEWARE ERROR ===");
-        console.error("Middleware error details:", {
-          message: (error as Error).message,
-          stack: (error as Error).stack,
-          name: (error as Error).name
-        });
-        console.error("=== UPLOAD MIDDLEWARE ERROR END ===");
+        console.error("❌ Upload middleware error:", error);
         throw error;
       }
     })
