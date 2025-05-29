@@ -5,6 +5,11 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { UTApi } from 'uploadthing/server'
 
+// Polyfill File constructor for Node.js environments
+if (typeof File === 'undefined') {
+  global.File = require('formdata-polyfill/esm').File
+}
+
 const utapi = new UTApi()
 
 async function uploadToUploadthing(buffer: Buffer, fileName: string): Promise<string | null> {
@@ -16,6 +21,7 @@ async function uploadToUploadthing(buffer: Buffer, fileName: string): Promise<st
     const mimeType = getMimeType(extension || '')
     
     // Create a File object from buffer with proper MIME type
+    // The polyfill ensures File constructor is available in Node.js
     const file = new File([buffer], fileName, {
       type: mimeType
     })
