@@ -11,7 +11,7 @@ interface CustomUploadThingProps {
   onUploadComplete: (urls: string[]) => void;
   onUploadError?: (error: Error) => void;
   maxFiles?: number;
-  endpoint?: "imageUploader" | "paymentProofUploader";
+  endpoint?: "imageUploader" | "paymentProofUploader" | "testUploader";
 }
 
 export function CustomUploadThing({

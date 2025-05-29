@@ -30,7 +30,17 @@ export const ourFileRouter = {
       return { uploadedBy: metadata.userId, url: file.url };
     }),
 
-  // Payment proof uploader - for customers to upload payment proof
+  // Test uploader - for debugging purposes (no auth required)
+  testUploader: f({ image: { maxFileSize: "4MB", maxFileCount: 3 } })
+    .middleware(async ({ req }) => {
+      // No authentication required for testing
+      console.log("Test upload middleware triggered");
+      return { userId: "test-user" };
+    })
+    .onUploadComplete(async ({ metadata, file }) => {
+      console.log("Test upload complete:", { metadata, file });
+      return { uploadedBy: metadata.userId, url: file.url };
+    }),
   paymentProofUploader: f({ image: { maxFileSize: "4MB", maxFileCount: 1 } })
     .middleware(async ({ req }) => {
       // This code runs on your server before upload

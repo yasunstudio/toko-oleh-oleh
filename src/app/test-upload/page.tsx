@@ -101,6 +101,7 @@ export default function UploadTestPage() {
               });
             }}
             maxFiles={4}
+            endpoint="testUploader"
           />
           
           {uploadedUrls.length > 0 && (
