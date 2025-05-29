@@ -5,10 +5,22 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { UTApi } from 'uploadthing/server'
 
+// Critical: Ensure File constructor is globally available in Node.js environments
+if (typeof globalThis.File === 'undefined') {
+  try {
+    const { File } = require('formdata-polyfill/esm')
+    globalThis.File = File
+    console.log('✅ File constructor polyfilled globally')
+  } catch (error) {
+    console.error('❌ Failed to polyfill File globally:', error)
+  }
+}
+
 // Ensure File constructor is available in Node.js environments
 let FileConstructor: typeof File
 if (typeof File !== 'undefined') {
   FileConstructor = File
+  console.log('✅ Using native File constructor')
 } else {
   // Use formdata-polyfill for Node.js environments
   try {
@@ -17,18 +29,60 @@ if (typeof File !== 'undefined') {
     console.log('✅ Using formdata-polyfill File constructor')
   } catch (error) {
     console.error('❌ Failed to load formdata-polyfill:', error)
-    // Fallback: Create a minimal File-like constructor
-    FileConstructor = class FilePolyfill {
+    
+    // Enhanced fallback: Create a comprehensive File-like constructor
+    FileConstructor = class FilePolyfill implements File {
       name: string
       size: number
       type: string
-      constructor(fileBits: any[], filename: string, options: any = {}) {
+      lastModified: number
+      webkitRelativePath: string = ''
+      
+      constructor(fileBits: BlobPart[], filename: string, options: FilePropertyBag = {}) {
         this.name = filename
-        this.size = fileBits[0]?.length || 0
         this.type = options.type || 'application/octet-stream'
+        this.lastModified = options.lastModified || Date.now()
+        
+        // Calculate size from fileBits
+        this.size = fileBits.reduce((total, bit) => {
+          if (bit instanceof ArrayBuffer) {
+            return total + bit.byteLength
+          } else if (bit instanceof Uint8Array) {
+            return total + bit.length
+          } else if (typeof bit === 'string') {
+            return total + new TextEncoder().encode(bit).length
+          } else if (bit && typeof (bit as any).length === 'number') {
+            return total + (bit as any).length
+          }
+          return total
+        }, 0)
+      }
+      
+      // Required Blob methods
+      arrayBuffer(): Promise<ArrayBuffer> {
+        // This should never be called in our usage but implementing for completeness
+        return Promise.resolve(new ArrayBuffer(0))
+      }
+      
+      slice(start?: number, end?: number, contentType?: string): Blob {
+        // Minimal implementation
+        return new (this.constructor as any)([], this.name, { type: contentType || this.type })
+      }
+      
+      stream(): ReadableStream<Uint8Array> {
+        // Minimal implementation
+        return new ReadableStream({
+          start(controller) {
+            controller.close()
+          }
+        })
+      }
+      
+      text(): Promise<string> {
+        return Promise.resolve('')
       }
     } as any
-    console.log('⚠️ Using fallback File constructor')
+    console.log('⚠️ Using enhanced fallback File constructor')
   }
 }
 
@@ -44,7 +98,7 @@ async function uploadToUploadthing(buffer: Buffer, fileName: string): Promise<st
     
     console.log(`📁 File details: ${fileName}, Size: ${buffer.length}, Type: ${mimeType}`)
 
-    // Upload to UploadThing with retry mechanism using uploadFilesFromBuffer
+    // Upload to UploadThing with retry mechanism
     let uploadAttempts = 0
     const maxAttempts = 3
     
@@ -53,61 +107,48 @@ async function uploadToUploadthing(buffer: Buffer, fileName: string): Promise<st
         uploadAttempts++
         console.log(`🔄 Upload attempt ${uploadAttempts}/${maxAttempts}`)
         
-        // Try using the buffer-based upload method first
+        // Use UploadThing's uploadFilesFromBuffer method (Node.js server-side approach)
         try {
-          console.log('🧪 Attempting buffer-based upload...')
-          // Create a File-like object manually for UploadThing
-          const fileData = {
-            name: fileName,
-            size: buffer.length,
-            type: mimeType,
-            arrayBuffer: async () => buffer,
-            stream: () => new ReadableStream({
-              start(controller) {
-                controller.enqueue(buffer)
-                controller.close()
-              }
-            })
-          }
+          console.log('🧪 Attempting uploadFilesFromBuffer method...')
           
-          const response = await utapi.uploadFiles([fileData as any])
-          
-          if (response && response[0] && response[0].data && response[0].data.url) {
-            const url = response[0].data.url
-            console.log(`✅ UploadThing upload successful: ${url}`)
+          // Try the uploadFilesFromBuffer method if available
+          if (typeof (utapi as any).uploadFilesFromBuffer === 'function') {
+            const response = await (utapi as any).uploadFilesFromBuffer([{
+              name: fileName,
+              data: buffer,
+              type: mimeType
+            }])
             
-            // Verify the URL format is correct
-            if (url.includes('utfs.io') || url.includes('uploadthing')) {
+            if (response && response[0] && response[0].data && response[0].data.url) {
+              const url = response[0].data.url
+              console.log(`✅ UploadThing buffer upload successful: ${url}`)
               return url
-            } else {
-              console.error(`❌ Invalid UploadThing URL format: ${url}`)
             }
-          } else {
-            console.error(`❌ UploadThing upload failed (attempt ${uploadAttempts}):`, response[0]?.error)
           }
         } catch (bufferError) {
-          console.log('❌ Buffer-based upload failed, trying File constructor approach...')
-          
-          // Fallback to File constructor approach
-          const file = new FileConstructor([buffer], fileName, {
-            type: mimeType
-          })
+          console.log('❌ uploadFilesFromBuffer not available, trying File constructor approach...')
+        }
+        
+        // Fallback: Create a proper File object using polyfill
+        console.log('🔄 Creating File object with polyfill...')
+        const file = new FileConstructor([buffer], fileName, {
+          type: mimeType
+        })
 
-          const response = await utapi.uploadFiles([file])
+        const response = await utapi.uploadFiles([file])
+        
+        if (response && response[0] && response[0].data && response[0].data.url) {
+          const url = response[0].data.url
+          console.log(`✅ UploadThing upload successful: ${url}`)
           
-          if (response && response[0] && response[0].data && response[0].data.url) {
-            const url = response[0].data.url
-            console.log(`✅ UploadThing upload successful: ${url}`)
-            
-            // Verify the URL format is correct
-            if (url.includes('utfs.io') || url.includes('uploadthing')) {
-              return url
-            } else {
-              console.error(`❌ Invalid UploadThing URL format: ${url}`)
-            }
+          // Verify the URL format is correct
+          if (url.includes('utfs.io') || url.includes('uploadthing')) {
+            return url
           } else {
-            console.error(`❌ UploadThing upload failed (attempt ${uploadAttempts}):`, response[0]?.error)
+            console.error(`❌ Invalid UploadThing URL format: ${url}`)
           }
+        } else {
+          console.error(`❌ UploadThing upload failed (attempt ${uploadAttempts}):`, response[0]?.error)
         }
         
         // Wait before retry
@@ -119,6 +160,12 @@ async function uploadToUploadthing(buffer: Buffer, fileName: string): Promise<st
         console.error(`❌ UploadThing upload error (attempt ${uploadAttempts}):`, uploadError)
         if (uploadAttempts === maxAttempts) {
           throw uploadError
+        }
+        
+        // If this is a File constructor error, wait and retry
+        if (uploadError instanceof ReferenceError && uploadError.message.includes('File is not defined')) {
+          console.log('🔄 File constructor error detected, retrying with extended polyfill...')
+          await new Promise(resolve => setTimeout(resolve, 1000))
         }
       }
     }

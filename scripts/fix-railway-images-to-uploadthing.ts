@@ -3,6 +3,17 @@ import { readFileSync, existsSync, readdirSync, statSync } from 'fs'
 import { join } from 'path'
 import { PrismaClient } from '@prisma/client'
 
+// Critical: Ensure File constructor is globally available in Node.js environments
+if (typeof globalThis.File === 'undefined') {
+  try {
+    const { File } = require('formdata-polyfill/esm')
+    globalThis.File = File
+    console.log('✅ File constructor polyfilled globally in script')
+  } catch (error) {
+    console.error('❌ Failed to polyfill File globally in script:', error)
+  }
+}
+
 // Ensure File constructor is available in Node.js environments
 let FileConstructor: typeof File
 if (typeof File !== 'undefined') {
