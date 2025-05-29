@@ -102,16 +102,14 @@ async function diagnoseImageIssues() {
     
     const allImageUrls = [...productImageUrls, ...categoryImageUrls]
     
-    // Categorize URL patterns
+    // Categorize URL patterns (only UploadThing focus)
     const urlPatterns = {
       local: allImageUrls.filter(url => url.startsWith('/uploads/')),
       uploadthing: allImageUrls.filter(url => url.includes('utfs.io')),
-      unsplash: allImageUrls.filter(url => url.includes('unsplash.com')),
       placeholder: allImageUrls.filter(url => url === '/placeholder.jpg'),
       other: allImageUrls.filter(url => 
         !url.startsWith('/uploads/') && 
         !url.includes('utfs.io') && 
-        !url.includes('unsplash.com') && 
         url !== '/placeholder.jpg'
       )
     }
@@ -119,7 +117,6 @@ async function diagnoseImageIssues() {
     console.log('URL Pattern Distribution:')
     console.log(`🔗 Local paths (/uploads/): ${urlPatterns.local.length}`)
     console.log(`☁️ UploadThing (utfs.io): ${urlPatterns.uploadthing.length}`)
-    console.log(`🖼️ Unsplash: ${urlPatterns.unsplash.length}`)
     console.log(`📋 Placeholder: ${urlPatterns.placeholder.length}`)
     console.log(`❓ Other: ${urlPatterns.other.length}`)
     
@@ -128,8 +125,7 @@ async function diagnoseImageIssues() {
     console.log('='.repeat(50))
     
     const sampleUrls = [
-      ...urlPatterns.uploadthing.slice(0, 3),
-      ...urlPatterns.unsplash.slice(0, 3),
+      ...urlPatterns.uploadthing.slice(0, 5),
       ...urlPatterns.other.slice(0, 2)
     ].filter(url => !url.startsWith('/uploads/') && url !== '/placeholder.jpg')
     
