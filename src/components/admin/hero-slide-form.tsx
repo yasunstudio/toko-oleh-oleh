@@ -13,6 +13,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { useToast } from '@/hooks/use-toast'
 import { Upload, X, Palette, Image as ImageIcon } from 'lucide-react'
 import Image from 'next/image'
+import { CustomUploadThing } from '@/components/upload/uploadthing-custom'
 
 const heroSlideSchema = z.object({
   title: z.string().min(1, 'Judul wajib diisi'),
@@ -56,7 +57,6 @@ export function HeroSlideForm({ slide, onSuccess, onCancel }: HeroSlideFormProps
   const { toast } = useToast()
   const [loading, setLoading] = useState(false)
   const [backgroundImage, setBackgroundImage] = useState<string>(slide?.backgroundImage || '')
-  const [uploading, setUploading] = useState(false)
   const [backgroundType, setBackgroundType] = useState<'color' | 'image'>(
     slide?.backgroundImage ? 'image' : 'color'
   )
@@ -88,63 +88,22 @@ export function HeroSlideForm({ slide, onSuccess, onCancel }: HeroSlideFormProps
 
   const watchedValues = watch()
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
-
-    // Validate file type
-    if (!file.type.startsWith('image/')) {
+  const handleUploadComplete = (urls: string[]) => {
+    if (urls.length > 0) {
+      setBackgroundImage(urls[0])
       toast({
-        title: 'Error',
-        description: 'File harus berupa gambar',
-        variant: 'destructive'
+        title: 'Berhasil',
+        description: 'Gambar background berhasil diupload'
       })
-      return
     }
+  }
 
-    // Validate file size (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      toast({
-        title: 'Error',
-        description: 'Ukuran file maksimal 5MB',
-        variant: 'destructive'
-      })
-      return
-    }
-
-    setUploading(true)
-    try {
-      const formData = new FormData()
-      formData.append('images', file)
-
-      const response = await fetch('/api/upload', {
-        method: 'POST',
-        body: formData
-      })
-
-      if (response.ok) {
-        const data = await response.json()
-        setBackgroundImage(data.urls[0])
-        toast({
-          title: 'Berhasil',
-          description: 'Gambar background berhasil diupload'
-        })
-      } else {
-        toast({
-          title: 'Gagal',
-          description: 'Gagal mengupload gambar',
-          variant: 'destructive'
-        })
-      }
-    } catch (error) {
-      toast({
-        title: 'Error',
-        description: 'Terjadi kesalahan saat upload',
-        variant: 'destructive'
-      })
-    } finally {
-      setUploading(false)
-    }
+  const handleUploadError = (error: Error) => {
+    toast({
+      title: 'Gagal',
+      description: 'Gagal mengupload gambar: ' + error.message,
+      variant: 'destructive'
+    })
   }
 
   const removeImage = () => {
@@ -400,25 +359,17 @@ export function HeroSlideForm({ slide, onSuccess, onCancel }: HeroSlideFormProps
                     </Button>
                   </div>
                 ) : (
-                  <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6 text-center">
-                    <Upload className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
-                    <p className="text-sm text-muted-foreground mb-2">
-                      Klik untuk upload gambar background
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      PNG, JPG hingga 5MB
-                    </p>
-                    <Input
-                      type="file"
-                      accept="image/*"
-                      onChange={handleImageUpload}
-                      disabled={uploading}
-                      className="mt-2"
+                  <div>
+                    <CustomUploadThing
+                      onUploadComplete={handleUploadComplete}
+                      onUploadError={handleUploadError}
+                      maxFiles={1}
+                      endpoint="imageUploader"
                     />
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Format: JPG, PNG. Maksimal 4MB
+                    </p>
                   </div>
-                )}
-                {uploading && (
-                  <p className="text-sm text-muted-foreground mt-2">Mengupload...</p>
                 )}
               </div>
             )}
