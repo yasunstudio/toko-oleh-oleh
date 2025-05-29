@@ -24,12 +24,35 @@ const f = createUploadthing({
   errorFormatter: (err: any) => {
     console.error("🚨 UploadThing Error Formatter:", {
       message: err.message,
+      name: err.name,
       code: err.code,
       data: err.data,
       stack: process.env.NODE_ENV === 'development' ? err.stack : undefined,
       cause: err.cause,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
+      type: err.type,
+      response: err.response
     });
+    
+    // Special handling for FetchError
+    if (err.name === "FetchError" || err.message?.includes("FetchError")) {
+      console.error("🚨 FetchError Detected:", {
+        name: err.name,
+        message: err.message,
+        cause: err.cause,
+        type: err.type,
+        code: err.code,
+        stack: err.stack,
+        response: err.response,
+        url: err.url,
+        timestamp: new Date().toISOString()
+      });
+      
+      return {
+        message: "Network connection error. Please check your internet connection and try again.",
+        code: "FETCH_ERROR"
+      };
+    }
     
     // Return simplified error for client
     return {
@@ -82,6 +105,24 @@ export const ourFileRouter = {
         
       } catch (error) {
         console.error("❌ Upload middleware error:", error);
+        
+        // Enhanced error logging for FetchError and network issues
+        if (error instanceof Error) {
+          console.error("🚨 Middleware Error Details:", {
+            name: error.name,
+            message: error.message,
+            stack: error.stack,
+            cause: (error as any).cause,
+            timestamp: new Date().toISOString()
+          });
+          
+          // Check for FetchError or network-related issues
+          if (error.name === "FetchError" || error.message?.includes("fetch")) {
+            console.error("🌐 Network/FetchError detected in middleware");
+            throw new Error("Network connection error during authentication");
+          }
+        }
+        
         throw error;
       }
     })

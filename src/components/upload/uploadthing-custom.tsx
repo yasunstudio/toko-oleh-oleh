@@ -72,6 +72,17 @@ export function CustomUploadThing({
       } else if (error.message?.includes("Admin access required")) {
         errorMessage = "Akses ditolak. Hanya admin yang dapat mengupload";
         debugInfo = "Authorization error - admin required";
+      } else if ((error as any).name === "FetchError" || error.message?.includes("FetchError")) {
+        errorMessage = "Koneksi ke server upload gagal. Coba lagi beberapa saat.";
+        debugInfo = `FetchError: ${error.message} - Check network connectivity and server status`;
+        console.error("🚨 FetchError Details:", {
+          name: (error as any).name,
+          message: error.message,
+          cause: (error as any).cause,
+          stack: error.stack,
+          code: (error as any).code,
+          type: (error as any).type
+        });
       } else if (error.message?.includes("CORS")) {
         errorMessage = "Masalah koneksi CORS. Periksa konfigurasi server";
         debugInfo = "CORS error - check server configuration";
@@ -80,13 +91,13 @@ export function CustomUploadThing({
         debugInfo = "Network connectivity issue";
       } else if (error.message?.includes("Something went wrong")) {
         errorMessage = "Server UploadThing mengalami masalah";
-        debugInfo = `UploadThing server error - ${error.name}`;
-      } else if (error.name === "UploadThingError") {
+        debugInfo = `UploadThing server error - ${(error as any).name}`;
+      } else if ((error as any).name === "UploadThingError") {
         errorMessage = "Error dari layanan UploadThing";
         debugInfo = `UploadThingError: ${error.message}`;
       } else {
         errorMessage = error.message || "Error tidak diketahui";
-        debugInfo = `${error.name}: ${error.message}`;
+        debugInfo = `${(error as any).name}: ${error.message}`;
       }
       
       console.error("🔍 Upload error debug info:", debugInfo);

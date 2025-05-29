@@ -7,14 +7,14 @@
 
 const PRODUCTION_URL = 'https://toko-oleh-oleh-production.up.railway.app';
 
-interface TestResult {
+interface ProductionTestResult {
   test: string;
   status: 'PASS' | 'FAIL';
   message: string;
   responseTime?: number;
 }
 
-async function testEndpoint(endpoint: string, description: string): Promise<TestResult> {
+async function testEndpoint(endpoint: string, description: string): Promise<ProductionTestResult> {
   const start = Date.now();
   try {
     const response = await fetch(`${PRODUCTION_URL}${endpoint}`);
@@ -43,7 +43,7 @@ async function testEndpoint(endpoint: string, description: string): Promise<Test
   }
 }
 
-async function testDatabaseEndpoints(): Promise<TestResult[]> {
+async function testDatabaseEndpoints(): Promise<ProductionTestResult[]> {
   console.log('🔍 Testing Database Endpoints...\n');
   
   const tests = [
@@ -54,7 +54,7 @@ async function testDatabaseEndpoints(): Promise<TestResult[]> {
     { endpoint: '/api/products?search=sambal', description: 'Product Search' },
   ];
 
-  const results: TestResult[] = [];
+  const results: ProductionTestResult[] = [];
   
   for (const test of tests) {
     const result = await testEndpoint(test.endpoint, test.description);
@@ -65,7 +65,7 @@ async function testDatabaseEndpoints(): Promise<TestResult[]> {
   return results;
 }
 
-async function testPageLoads(): Promise<TestResult[]> {
+async function testPageLoads(): Promise<ProductionTestResult[]> {
   console.log('\n📱 Testing Page Loads...\n');
   
   const pages = [
@@ -77,7 +77,7 @@ async function testPageLoads(): Promise<TestResult[]> {
     { endpoint: '/admin/login', description: 'Admin Login Page' },
   ];
 
-  const results: TestResult[] = [];
+  const results: ProductionTestResult[] = [];
   
   for (const page of pages) {
     const result = await testEndpoint(page.endpoint, page.description);
@@ -88,7 +88,7 @@ async function testPageLoads(): Promise<TestResult[]> {
   return results;
 }
 
-async function checkHeroSlides(): Promise<TestResult> {
+async function checkHeroSlides(): Promise<ProductionTestResult> {
   console.log('\n🎨 Testing Hero Slides...\n');
   
   try {
@@ -128,7 +128,7 @@ async function checkHeroSlides(): Promise<TestResult> {
   }
 }
 
-async function generateReport(allResults: TestResult[]) {
+async function generateReport(allResults: ProductionTestResult[]) {
   console.log('\n' + '='.repeat(60));
   console.log('📊 FINAL PRODUCTION VERIFICATION REPORT');
   console.log('='.repeat(60));
