@@ -42,15 +42,9 @@ async function uploadToUploadthing(buffer: Buffer, fileName: string): Promise<st
     const extension = fileName.split('.').pop()?.toLowerCase()
     const mimeType = getMimeType(extension || '')
     
-    // Create a File object from buffer with proper MIME type
-    // Using our polyfilled FileConstructor for Node.js compatibility
-    const file = new FileConstructor([buffer], fileName, {
-      type: mimeType
-    })
-
     console.log(`📁 File details: ${fileName}, Size: ${buffer.length}, Type: ${mimeType}`)
 
-    // Upload to UploadThing with retry mechanism
+    // Upload to UploadThing with retry mechanism using uploadFilesFromBuffer
     let uploadAttempts = 0
     const maxAttempts = 3
     
@@ -59,20 +53,61 @@ async function uploadToUploadthing(buffer: Buffer, fileName: string): Promise<st
         uploadAttempts++
         console.log(`🔄 Upload attempt ${uploadAttempts}/${maxAttempts}`)
         
-        const response = await utapi.uploadFiles([file])
-        
-        if (response && response[0] && response[0].data && response[0].data.url) {
-          const url = response[0].data.url
-          console.log(`✅ UploadThing upload successful: ${url}`)
-          
-          // Verify the URL format is correct
-          if (url.includes('utfs.io') || url.includes('uploadthing')) {
-            return url
-          } else {
-            console.error(`❌ Invalid UploadThing URL format: ${url}`)
+        // Try using the buffer-based upload method first
+        try {
+          console.log('🧪 Attempting buffer-based upload...')
+          // Create a File-like object manually for UploadThing
+          const fileData = {
+            name: fileName,
+            size: buffer.length,
+            type: mimeType,
+            arrayBuffer: async () => buffer,
+            stream: () => new ReadableStream({
+              start(controller) {
+                controller.enqueue(buffer)
+                controller.close()
+              }
+            })
           }
-        } else {
-          console.error(`❌ UploadThing upload failed (attempt ${uploadAttempts}):`, response[0]?.error)
+          
+          const response = await utapi.uploadFiles([fileData as any])
+          
+          if (response && response[0] && response[0].data && response[0].data.url) {
+            const url = response[0].data.url
+            console.log(`✅ UploadThing upload successful: ${url}`)
+            
+            // Verify the URL format is correct
+            if (url.includes('utfs.io') || url.includes('uploadthing')) {
+              return url
+            } else {
+              console.error(`❌ Invalid UploadThing URL format: ${url}`)
+            }
+          } else {
+            console.error(`❌ UploadThing upload failed (attempt ${uploadAttempts}):`, response[0]?.error)
+          }
+        } catch (bufferError) {
+          console.log('❌ Buffer-based upload failed, trying File constructor approach...')
+          
+          // Fallback to File constructor approach
+          const file = new FileConstructor([buffer], fileName, {
+            type: mimeType
+          })
+
+          const response = await utapi.uploadFiles([file])
+          
+          if (response && response[0] && response[0].data && response[0].data.url) {
+            const url = response[0].data.url
+            console.log(`✅ UploadThing upload successful: ${url}`)
+            
+            // Verify the URL format is correct
+            if (url.includes('utfs.io') || url.includes('uploadthing')) {
+              return url
+            } else {
+              console.error(`❌ Invalid UploadThing URL format: ${url}`)
+            }
+          } else {
+            console.error(`❌ UploadThing upload failed (attempt ${uploadAttempts}):`, response[0]?.error)
+          }
         }
         
         // Wait before retry
