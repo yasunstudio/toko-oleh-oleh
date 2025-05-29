@@ -6,29 +6,77 @@ import { authOptions } from '@/lib/auth'
 import { UTApi } from 'uploadthing/server'
 
 // Ensure File constructor is available in Node.js environments
-let FileConstructor: typeof File
+let FileConstructor: any
+
+// Try multiple approaches to get File constructor
 if (typeof File !== 'undefined') {
   FileConstructor = File
+  console.log('✅ Using native File constructor')
 } else {
-  // Use formdata-polyfill for Node.js environments
+  console.log('🔄 Native File not available, trying polyfills...')
+  
+  // Try formdata-polyfill first
   try {
-    const { File: PolyfillFile } = require('formdata-polyfill/esm')
-    FileConstructor = PolyfillFile
-    console.log('✅ Using formdata-polyfill File constructor')
-  } catch (error) {
-    console.error('❌ Failed to load formdata-polyfill:', error)
-    // Fallback: Create a minimal File-like constructor
-    FileConstructor = class FilePolyfill {
-      name: string
-      size: number
-      type: string
-      constructor(fileBits: any[], filename: string, options: any = {}) {
-        this.name = filename
-        this.size = fileBits[0]?.length || 0
-        this.type = options.type || 'application/octet-stream'
+    const polyfill = require('formdata-polyfill/esm')
+    if (polyfill && polyfill.File) {
+      FileConstructor = polyfill.File
+      console.log('✅ Using formdata-polyfill File constructor')
+    } else {
+      throw new Error('formdata-polyfill.File not found')
+    }
+  } catch (polyfillError: any) {
+    console.log('⚠️ formdata-polyfill failed:', polyfillError?.message || polyfillError)
+    
+    // Try global File polyfill
+    try {
+      const globalPolyfill = require('formdata-polyfill/esm')
+      global.File = global.File || globalPolyfill.File
+      FileConstructor = global.File
+      console.log('✅ Using global File polyfill')
+    } catch (globalError: any) {
+      console.log('⚠️ Global File polyfill failed:', globalError?.message || globalError)
+      
+      // Create a comprehensive File-like constructor
+      FileConstructor = class FilePolyfill {
+        name: string
+        size: number
+        type: string
+        lastModified: number
+        webkitRelativePath: string
+        
+        constructor(fileBits: any[], filename: string, options: any = {}) {
+          this.name = filename
+          this.size = Array.isArray(fileBits) && fileBits[0] ? fileBits[0].length || 0 : 0
+          this.type = options.type || 'application/octet-stream'
+          this.lastModified = Date.now()
+          this.webkitRelativePath = ''
+          
+          // Make it iterable like a real File
+          Object.defineProperty(this, Symbol.toStringTag, {
+            value: 'File',
+            configurable: true
+          })
+        }
+        
+        // Add File-like methods
+        stream() {
+          throw new Error('stream() not implemented in polyfill')
+        }
+        
+        arrayBuffer() {
+          throw new Error('arrayBuffer() not implemented in polyfill') 
+        }
+        
+        text() {
+          throw new Error('text() not implemented in polyfill')
+        }
+        
+        slice() {
+          throw new Error('slice() not implemented in polyfill')
+        }
       }
-    } as any
-    console.log('⚠️ Using fallback File constructor')
+      console.log('⚠️ Using comprehensive fallback File constructor')
+    }
   }
 }
 
@@ -42,13 +90,21 @@ async function uploadToUploadthing(buffer: Buffer, fileName: string): Promise<st
     const extension = fileName.split('.').pop()?.toLowerCase()
     const mimeType = getMimeType(extension || '')
     
+    console.log(`📁 File details: ${fileName}, Size: ${buffer.length}, Type: ${mimeType}`)
+    console.log(`🔧 Using FileConstructor: ${FileConstructor.name || 'Unknown'}`)
+
     // Create a File object from buffer with proper MIME type
     // Using our polyfilled FileConstructor for Node.js compatibility
-    const file = new FileConstructor([buffer], fileName, {
-      type: mimeType
-    })
-
-    console.log(`📁 File details: ${fileName}, Size: ${buffer.length}, Type: ${mimeType}`)
+    let file: any
+    try {
+      file = new FileConstructor([buffer], fileName, {
+        type: mimeType
+      })
+      console.log(`✅ File object created successfully: ${file.name}, ${file.size} bytes, ${file.type}`)
+    } catch (fileCreateError: any) {
+      console.error(`❌ Failed to create File object:`, fileCreateError?.message || fileCreateError)
+      throw new Error(`File creation failed: ${fileCreateError?.message || 'Unknown error'}`)
+    }
 
     // Upload to UploadThing with retry mechanism
     let uploadAttempts = 0
@@ -60,6 +116,7 @@ async function uploadToUploadthing(buffer: Buffer, fileName: string): Promise<st
         console.log(`🔄 Upload attempt ${uploadAttempts}/${maxAttempts}`)
         
         const response = await utapi.uploadFiles([file])
+        console.log(`📊 UploadThing response:`, JSON.stringify(response, null, 2))
         
         if (response && response[0] && response[0].data && response[0].data.url) {
           const url = response[0].data.url
@@ -70,18 +127,27 @@ async function uploadToUploadthing(buffer: Buffer, fileName: string): Promise<st
             return url
           } else {
             console.error(`❌ Invalid UploadThing URL format: ${url}`)
+            throw new Error(`Invalid URL format: ${url}`)
           }
         } else {
-          console.error(`❌ UploadThing upload failed (attempt ${uploadAttempts}):`, response[0]?.error)
+          const errorMsg = response[0]?.error || 'Unknown upload error'
+          console.error(`❌ UploadThing upload failed (attempt ${uploadAttempts}):`, errorMsg)
+          
+          if (uploadAttempts === maxAttempts) {
+            throw new Error(`Upload failed after ${maxAttempts} attempts: ${errorMsg}`)
+          }
         }
         
         // Wait before retry
         if (uploadAttempts < maxAttempts) {
-          await new Promise(resolve => setTimeout(resolve, 1000 * uploadAttempts))
+          const delay = 1000 * uploadAttempts
+          console.log(`⏳ Waiting ${delay}ms before retry...`)
+          await new Promise(resolve => setTimeout(resolve, delay))
         }
         
-      } catch (uploadError) {
-        console.error(`❌ UploadThing upload error (attempt ${uploadAttempts}):`, uploadError)
+      } catch (uploadError: any) {
+        console.error(`❌ UploadThing upload error (attempt ${uploadAttempts}):`, uploadError?.message || uploadError)
+        
         if (uploadAttempts === maxAttempts) {
           throw uploadError
         }
@@ -90,9 +156,9 @@ async function uploadToUploadthing(buffer: Buffer, fileName: string): Promise<st
     
     return null
     
-  } catch (error) {
-    console.error('❌ UploadThing critical error:', error)
-    return null
+  } catch (error: any) {
+    console.error('❌ UploadThing critical error:', error?.message || error)
+    throw error // Re-throw instead of returning null to force proper error handling
   }
 }
 

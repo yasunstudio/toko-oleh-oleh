@@ -13,6 +13,7 @@ import { Switch } from '@/components/ui/switch'
 import { useToast } from '@/hooks/use-toast'
 import { Upload, X } from 'lucide-react'
 import Image from 'next/image'
+import { CustomUploadThing } from '@/components/upload/uploadthing-custom'
 
 const generalSettingsSchema = z.object({
   siteName: z.string().min(1, 'Nama situs wajib diisi'),
@@ -44,7 +45,6 @@ interface Settings {
 export function GeneralSettings() {
   const { toast } = useToast()
   const [loading, setLoading] = useState(false)
-  const [logoUploading, setLogoUploading] = useState(false)
   const [logo, setLogo] = useState<string>('')
   const [settings, setSettings] = useState<Settings | null>(null)
 
@@ -77,43 +77,22 @@ export function GeneralSettings() {
     }
   }
 
-  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
-
-    setLogoUploading(true)
-    try {
-      const formData = new FormData()
-      formData.append('images', file)
-
-      const response = await fetch('/api/upload', {
-        method: 'POST',
-        body: formData
-      })
-
-      if (response.ok) {
-        const data = await response.json()
-        setLogo(data.urls[0])
-        toast({
-          title: 'Berhasil',
-          description: 'Logo berhasil diupload'
-        })
-      } else {
-        toast({
-          title: 'Gagal',
-          description: 'Gagal mengupload logo',
-          variant: 'destructive'
-        })
-      }
-    } catch (error) {
+  const handleLogoUploadComplete = (urls: string[]) => {
+    if (urls.length > 0) {
+      setLogo(urls[0])
       toast({
-        title: 'Error',
-        description: 'Terjadi kesalahan saat upload',
-        variant: 'destructive'
+        title: 'Berhasil',
+        description: 'Logo berhasil diupload'
       })
-    } finally {
-      setLogoUploading(false)
     }
+  }
+
+  const handleLogoUploadError = (error: Error) => {
+    toast({
+      title: 'Gagal',
+      description: 'Gagal mengupload logo: ' + error.message,
+      variant: 'destructive'
+    })
   }
 
   const removeLogo = () => {
@@ -229,24 +208,19 @@ export function GeneralSettings() {
                         </Button>
                       </div>
                     ) : (
-                      <div className="w-48 h-24 border-2 border-dashed border-border rounded-lg flex items-center justify-center">
-                        <div className="text-center">
-                          <Upload className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
-                          <p className="text-sm text-muted-foreground">Upload Logo</p>
-                        </div>
+                      <div>
+                        <CustomUploadThing
+                          onUploadComplete={handleLogoUploadComplete}
+                          onUploadError={handleLogoUploadError}
+                          maxFiles={1}
+                          endpoint="imageUploader"
+                        />
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Format: PNG, JPG. Maksimal 4MB. Ukuran optimal: 200x100px
+                        </p>
                       </div>
                     )}
                   </div>
-                  <Input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleLogoUpload}
-                    disabled={logoUploading}
-                    className="mt-2"
-                  />
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Format: PNG, JPG. Maksimal 2MB. Ukuran optimal: 200x100px
-                  </p>
                 </div>
               </div>
             </div>
@@ -338,7 +312,7 @@ export function GeneralSettings() {
             </div>
 
             <div className="flex justify-end">
-              <Button type="submit" disabled={loading || logoUploading}>
+              <Button type="submit" disabled={loading}>
                 {loading ? 'Menyimpan...' : 'Simpan Pengaturan'}
               </Button>
             </div>
