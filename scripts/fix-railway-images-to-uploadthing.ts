@@ -3,6 +3,33 @@ import { readFileSync, existsSync, readdirSync, statSync } from 'fs'
 import { join } from 'path'
 import { PrismaClient } from '@prisma/client'
 
+// Ensure File constructor is available in Node.js environments
+let FileConstructor: typeof File
+if (typeof File !== 'undefined') {
+  FileConstructor = File
+} else {
+  // Use formdata-polyfill for Node.js environments
+  try {
+    const { File: PolyfillFile } = require('formdata-polyfill/esm')
+    FileConstructor = PolyfillFile
+    console.log('✅ Using formdata-polyfill File constructor in script')
+  } catch (error) {
+    console.error('❌ Failed to load formdata-polyfill in script:', error)
+    // Fallback: Create a minimal File-like constructor
+    FileConstructor = class FilePolyfill {
+      name: string
+      size: number
+      type: string
+      constructor(fileBits: any[], filename: string, options: any = {}) {
+        this.name = filename
+        this.size = fileBits[0]?.length || 0
+        this.type = options.type || 'application/octet-stream'
+      }
+    } as any
+    console.log('⚠️ Using fallback File constructor in script')
+  }
+}
+
 const utapi = new UTApi()
 const prisma = new PrismaClient()
 
@@ -25,8 +52,8 @@ async function uploadImageToUploadThing(filePath: string, fileName: string): Pro
     const fileBuffer = readFileSync(filePath)
     const fileExtension = fileName.split('.').pop()?.toLowerCase()
     
-    // Create File object
-    const file = new File([fileBuffer], fileName, {
+    // Create File object using polyfilled constructor
+    const file = new FileConstructor([fileBuffer], fileName, {
       type: `image/${fileExtension === 'jpg' ? 'jpeg' : fileExtension}`
     })
 

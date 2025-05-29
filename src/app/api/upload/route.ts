@@ -5,9 +5,31 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { UTApi } from 'uploadthing/server'
 
-// Polyfill File constructor for Node.js environments
-if (typeof File === 'undefined') {
-  global.File = require('formdata-polyfill/esm').File
+// Ensure File constructor is available in Node.js environments
+let FileConstructor: typeof File
+if (typeof File !== 'undefined') {
+  FileConstructor = File
+} else {
+  // Use formdata-polyfill for Node.js environments
+  try {
+    const { File: PolyfillFile } = require('formdata-polyfill/esm')
+    FileConstructor = PolyfillFile
+    console.log('✅ Using formdata-polyfill File constructor')
+  } catch (error) {
+    console.error('❌ Failed to load formdata-polyfill:', error)
+    // Fallback: Create a minimal File-like constructor
+    FileConstructor = class FilePolyfill {
+      name: string
+      size: number
+      type: string
+      constructor(fileBits: any[], filename: string, options: any = {}) {
+        this.name = filename
+        this.size = fileBits[0]?.length || 0
+        this.type = options.type || 'application/octet-stream'
+      }
+    } as any
+    console.log('⚠️ Using fallback File constructor')
+  }
 }
 
 const utapi = new UTApi()
@@ -21,8 +43,8 @@ async function uploadToUploadthing(buffer: Buffer, fileName: string): Promise<st
     const mimeType = getMimeType(extension || '')
     
     // Create a File object from buffer with proper MIME type
-    // The polyfill ensures File constructor is available in Node.js
-    const file = new File([buffer], fileName, {
+    // Using our polyfilled FileConstructor for Node.js compatibility
+    const file = new FileConstructor([buffer], fileName, {
       type: mimeType
     })
 
