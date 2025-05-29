@@ -52,7 +52,8 @@ export function CustomUploadThing({
       console.error("Error details:", {
         message: error.message,
         stack: error.stack,
-        name: error.name
+        name: error.name,
+        cause: (error as any).cause
       });
       setIsUploading(false);
       onUploadError?.(error);
@@ -60,12 +61,16 @@ export function CustomUploadThing({
       // Enhanced error messages for common issues
       let errorMessage = error.message || "Terjadi kesalahan saat upload";
       
-      if (error.message?.includes("Unauthorized")) {
+      if (error.message?.includes("Unauthorized") || error.message?.includes("UNAUTHORIZED")) {
         errorMessage = "Anda harus login sebagai admin untuk mengupload gambar";
+      } else if (error.message?.includes("FORBIDDEN")) {
+        errorMessage = "Akses ditolak. Hanya admin yang dapat mengupload gambar";
       } else if (error.message?.includes("CORS")) {
         errorMessage = "Masalah koneksi. Silakan coba lagi";
-      } else if (error.message?.includes("Network")) {
+      } else if (error.message?.includes("Network") || error.message?.includes("fetch")) {
         errorMessage = "Masalah jaringan. Periksa koneksi internet Anda";
+      } else if (error.message?.includes("Something went wrong")) {
+        errorMessage = "Terjadi kesalahan pada server. Silakan coba lagi dalam beberapa saat";
       }
       
       toast({
