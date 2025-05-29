@@ -20,20 +20,35 @@ export function UploadThingImageUploader({
       <UploadDropzone<OurFileRouter, keyof OurFileRouter>
         endpoint={endpoint}
         onClientUploadComplete={(res) => {
-          console.log("Files uploaded:", res);
-          const urls = res?.map(file => file.url) || [];
-          onUploadComplete(urls);
-          toast({
-            title: "Upload berhasil!",
-            description: `${urls.length} gambar berhasil diupload`,
-          });
+          console.log("UploadThing upload complete:", res);
+          try {
+            const urls = res?.map(file => file.url) || [];
+            console.log("Extracted URLs:", urls);
+            onUploadComplete(urls);
+            toast({
+              title: "Upload berhasil!",
+              description: `${urls.length} gambar berhasil diupload`,
+            });
+          } catch (err) {
+            console.error("Error processing upload result:", err);
+            toast({
+              title: "Upload gagal",
+              description: "Gagal memproses hasil upload",
+              variant: "destructive",
+            });
+          }
         }}
         onUploadError={(error: Error) => {
-          console.error("Upload error:", error);
+          console.error("UploadThing upload error:", error);
+          console.error("Error details:", {
+            message: error.message,
+            stack: error.stack,
+            name: error.name
+          });
           onUploadError?.(error);
           toast({
             title: "Upload gagal",
-            description: error.message,
+            description: error.message || "Terjadi kesalahan saat upload",
             variant: "destructive",
           });
         }}
@@ -68,20 +83,35 @@ export function UploadThingButton({
     <UploadButton<OurFileRouter, keyof OurFileRouter>
       endpoint={endpoint}
       onClientUploadComplete={(res) => {
-        console.log("Files uploaded:", res);
-        const urls = res?.map(file => file.url) || [];
-        onUploadComplete(urls);
-        toast({
-          title: "Upload berhasil!",
-          description: `${urls.length} gambar berhasil diupload`,
-        });
+        console.log("UploadButton upload complete:", res);
+        try {
+          const urls = res?.map(file => file.url) || [];
+          console.log("Extracted URLs:", urls);
+          onUploadComplete(urls);
+          toast({
+            title: "Upload berhasil!",
+            description: `${urls.length} gambar berhasil diupload`,
+          });
+        } catch (err) {
+          console.error("Error processing upload result:", err);
+          toast({
+            title: "Upload gagal",
+            description: "Gagal memproses hasil upload",
+            variant: "destructive",
+          });
+        }
       }}
       onUploadError={(error: Error) => {
-        console.error("Upload error:", error);
+        console.error("UploadButton upload error:", error);
+        console.error("Error details:", {
+          message: error.message,
+          stack: error.stack,
+          name: error.name
+        });
         onUploadError?.(error);
         toast({
           title: "Upload gagal",
-          description: error.message,
+          description: error.message || "Terjadi kesalahan saat upload",
           variant: "destructive",
         });
       }}

@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { UploadThingImageUploader } from '@/components/upload/uploadthing-uploader'
+import { CustomUploadThing } from '@/components/upload/uploadthing-custom'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Switch } from '@/components/ui/switch'
@@ -300,7 +301,7 @@ export function ProductForm({ product, isEdit = false }: ProductFormProps) {
           <CardContent className="space-y-4">
             <div>
               <Label className="text-foreground">Upload Gambar Produk</Label>
-              <UploadThingImageUploader
+              <CustomUploadThing
                 onUploadComplete={(urls) => {
                   setImages(prev => [...prev, ...urls])
                   toast({
