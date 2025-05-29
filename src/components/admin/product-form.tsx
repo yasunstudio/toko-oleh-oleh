@@ -9,11 +9,12 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
+import { UploadThingImageUploader } from '@/components/upload/uploadthing-uploader'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Switch } from '@/components/ui/switch'
 import { useToast } from "@/hooks/use-toast"
-import { Upload, X } from 'lucide-react'
+import { X } from 'lucide-react'
 import { Product, Category } from '@/types'
 import Image from 'next/image'
 import { createProductAction } from '@/app/actions'
@@ -55,7 +56,6 @@ export function ProductForm({ product, isEdit = false }: ProductFormProps) {
     
     return [];
   })
-  const [uploading, setUploading] = useState(false)
 
   const {
     register,
@@ -91,48 +91,6 @@ export function ProductForm({ product, isEdit = false }: ProductFormProps) {
       }
     } catch (error) {
       console.error('Error fetching categories:', error)
-    }
-  }
-
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files
-    if (!files) return
-
-    setUploading(true)
-    try {
-      const formData = new FormData()
-      Array.from(files).forEach(file => {
-        formData.append('images', file)
-      })
-
-      const response = await fetch('/api/upload', {
-        method: 'POST',
-        body: formData
-      })
-
-      if (response.ok) {
-        const data = await response.json()
-        setImages(prev => [...prev, ...data.urls])
-        toast({
-          title: 'Berhasil',
-          description: 'Gambar berhasil diupload'
-        })
-      } else {
-        toast({
-          title: 'Gagal',
-          description: 'Gagal mengupload gambar',
-          variant: 'destructive'
-        })
-      }
-    } catch (error) {
-      console.error('Upload error:', error)
-      toast({
-        title: 'Error',
-        description: 'Terjadi kesalahan saat upload',
-        variant: 'destructive'
-      })
-    } finally {
-      setUploading(false)
     }
   }
 
@@ -341,18 +299,26 @@ export function ProductForm({ product, isEdit = false }: ProductFormProps) {
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <Label htmlFor="images" className="text-foreground">Upload Gambar (Max. 5MB per file)</Label>
-              <Input
-                id="images"
-                type="file"
-                multiple
-                accept="image/*"
-                onChange={handleImageUpload}
-                disabled={uploading}
-                className="bg-background border-border text-foreground placeholder:text-muted-foreground file:text-sm file:font-medium file:text-foreground file:bg-muted file:border-0 file:rounded-md file:px-3 file:py-2 hover:file:bg-accent"
+              <Label className="text-foreground">Upload Gambar Produk</Label>
+              <UploadThingImageUploader
+                onUploadComplete={(urls) => {
+                  setImages(prev => [...prev, ...urls])
+                  toast({
+                    title: 'Berhasil',
+                    description: `${urls.length} gambar berhasil diupload`
+                  })
+                }}
+                onUploadError={(error) => {
+                  toast({
+                    title: 'Upload gagal',
+                    description: error.message,
+                    variant: 'destructive'
+                  })
+                }}
+                maxFiles={4}
               />
               <p className="text-xs text-muted-foreground mt-1">
-                Format: JPG, PNG. Anda dapat memilih beberapa gambar sekaligus.
+                Maksimal 4 gambar, ukuran 4MB per file. Format: JPG, PNG, WebP.
               </p>
             </div>
 
@@ -380,15 +346,6 @@ export function ProductForm({ product, isEdit = false }: ProductFormProps) {
                 ))}
               </div>
             )}
-
-            {uploading && (
-              <div className="text-center text-sm text-muted-foreground">
-                <div className="flex items-center justify-center space-x-2">
-                  <Upload className="h-4 w-4 animate-pulse" />
-                  <span>Mengupload gambar...</span>
-                </div>
-              </div>
-            )}
           </CardContent>
         </Card>
       </div>
@@ -404,7 +361,7 @@ export function ProductForm({ product, isEdit = false }: ProductFormProps) {
         >
           Batal
         </Button>
-        <Button type="submit" disabled={loading || uploading}>
+        <Button type="submit" disabled={loading}>
           {loading ? 'Menyimpan...' : isEdit ? 'Perbarui Produk' : 'Buat Produk'}
         </Button>
       </div>

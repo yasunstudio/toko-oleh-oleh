@@ -11,8 +11,9 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { useToast } from "@/hooks/use-toast"
-import { Upload, X } from 'lucide-react'
+import { X } from 'lucide-react'
 import Image from 'next/image'
+import { UploadThingImageUploader } from '@/components/upload/uploadthing-uploader'
 
 const categorySchema = z.object({
   name: z.string().min(1, 'Nama kategori wajib diisi'),
@@ -39,7 +40,6 @@ export function CategoryForm({ category, isEdit = false }: CategoryFormProps) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [image, setImage] = useState<string>(category?.image || '')
-  const [uploading, setUploading] = useState(false)
 
   const {
     register,
@@ -53,43 +53,22 @@ export function CategoryForm({ category, isEdit = false }: CategoryFormProps) {
     }
   })
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
-
-    setUploading(true)
-    try {
-      const formData = new FormData()
-      formData.append('images', file)
-
-      const response = await fetch('/api/upload', {
-        method: 'POST',
-        body: formData
-      })
-
-      if (response.ok) {
-        const data = await response.json()
-        setImage(data.urls[0])
-        toast({
-          title: 'Berhasil',
-          description: 'Gambar berhasil diupload'
-        })
-      } else {
-        toast({
-          title: 'Gagal',
-          description: 'Gagal mengupload gambar',
-          variant: 'destructive'
-        })
-      }
-    } catch (error) {
+  const handleUploadComplete = (urls: string[]) => {
+    if (urls.length > 0) {
+      setImage(urls[0])
       toast({
-        title: 'Error',
-        description: 'Terjadi kesalahan saat upload',
-        variant: 'destructive'
+        title: 'Berhasil',
+        description: 'Gambar berhasil diupload'
       })
-    } finally {
-      setUploading(false)
     }
+  }
+
+  const handleUploadError = (error: Error) => {
+    toast({
+      title: 'Gagal',
+      description: 'Gagal mengupload gambar: ' + error.message,
+      variant: 'destructive'
+    })
   }
 
   const removeImage = () => {
@@ -180,46 +159,37 @@ export function CategoryForm({ category, isEdit = false }: CategoryFormProps) {
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <Label htmlFor="image" className="text-foreground">Upload Gambar</Label>
-              <Input
-                id="image"
-                type="file"
-                accept="image/*"
-                onChange={handleImageUpload}
-                disabled={uploading}
-                className="bg-background border-border text-foreground placeholder:text-muted-foreground file:text-foreground"
-              />
+              <Label className="text-foreground">Upload Gambar</Label>
+              {!image ? (
+                <UploadThingImageUploader
+                  endpoint="imageUploader"
+                  onUploadComplete={handleUploadComplete}
+                  onUploadError={handleUploadError}
+                />
+              ) : (
+                <div className="relative aspect-video">
+                  <Image
+                    src={image}
+                    alt="Category image"
+                    fill
+                    sizes="(max-width: 768px) 100vw, 50vw"
+                    className="object-cover rounded border border-border"
+                  />
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    size="sm"
+                    className="absolute top-2 right-2"
+                    onClick={removeImage}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              )}
               <p className="text-xs text-muted-foreground mt-1">
-                Format: JPG, PNG. Maksimal 5MB
+                Format: JPG, PNG. Maksimal 4MB
               </p>
             </div>
-
-            {image && (
-              <div className="relative aspect-video">
-                <Image
-                  src={image}
-                  alt="Category image"
-                  fill
-                  sizes="(max-width: 768px) 100vw, 50vw"
-                  className="object-cover rounded border border-border"
-                />
-                <Button
-                  type="button"
-                  variant="destructive"
-                  size="sm"
-                  className="absolute top-2 right-2"
-                  onClick={removeImage}
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-              </div>
-            )}
-
-            {uploading && (
-              <div className="text-center text-sm text-muted-foreground">
-                Mengupload gambar...
-              </div>
-            )}
           </CardContent>
         </Card>
       </div>
@@ -235,7 +205,7 @@ export function CategoryForm({ category, isEdit = false }: CategoryFormProps) {
         >
           Batal
         </Button>
-        <Button type="submit" disabled={loading || uploading}>
+        <Button type="submit" disabled={loading}>
           {loading ? 'Menyimpan...' : isEdit ? 'Perbarui Kategori' : 'Buat Kategori'}
         </Button>
       </div>

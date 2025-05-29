@@ -9,25 +9,76 @@ const utapi = new UTApi()
 
 async function uploadToUploadthing(buffer: Buffer, fileName: string): Promise<string | null> {
   try {
-    // Create a File object from buffer
+    console.log(`🔄 Starting UploadThing upload for: ${fileName}`)
+    
+    // Get file extension for proper MIME type
+    const extension = fileName.split('.').pop()?.toLowerCase()
+    const mimeType = getMimeType(extension || '')
+    
+    // Create a File object from buffer with proper MIME type
     const file = new File([buffer], fileName, {
-      type: `image/${fileName.split('.').pop()}`
+      type: mimeType
     })
 
-    // Upload to UploadThing
-    const response = await utapi.uploadFiles([file])
+    console.log(`📁 File details: ${fileName}, Size: ${buffer.length}, Type: ${mimeType}`)
+
+    // Upload to UploadThing with retry mechanism
+    let uploadAttempts = 0
+    const maxAttempts = 3
     
-    if (response[0]?.data?.url) {
-      console.log(`✅ Image uploaded to UploadThing: ${response[0].data.url}`)
-      return response[0].data.url
-    } else {
-      console.error('❌ UploadThing upload failed:', response[0]?.error)
-      return null
+    while (uploadAttempts < maxAttempts) {
+      try {
+        uploadAttempts++
+        console.log(`🔄 Upload attempt ${uploadAttempts}/${maxAttempts}`)
+        
+        const response = await utapi.uploadFiles([file])
+        
+        if (response && response[0] && response[0].data && response[0].data.url) {
+          const url = response[0].data.url
+          console.log(`✅ UploadThing upload successful: ${url}`)
+          
+          // Verify the URL format is correct
+          if (url.includes('utfs.io') || url.includes('uploadthing')) {
+            return url
+          } else {
+            console.error(`❌ Invalid UploadThing URL format: ${url}`)
+          }
+        } else {
+          console.error(`❌ UploadThing upload failed (attempt ${uploadAttempts}):`, response[0]?.error)
+        }
+        
+        // Wait before retry
+        if (uploadAttempts < maxAttempts) {
+          await new Promise(resolve => setTimeout(resolve, 1000 * uploadAttempts))
+        }
+        
+      } catch (uploadError) {
+        console.error(`❌ UploadThing upload error (attempt ${uploadAttempts}):`, uploadError)
+        if (uploadAttempts === maxAttempts) {
+          throw uploadError
+        }
+      }
     }
+    
+    return null
+    
   } catch (error) {
-    console.error('❌ UploadThing error:', error)
+    console.error('❌ UploadThing critical error:', error)
     return null
   }
+}
+
+function getMimeType(extension: string): string {
+  const mimeTypes: { [key: string]: string } = {
+    'jpg': 'image/jpeg',
+    'jpeg': 'image/jpeg',
+    'png': 'image/png',
+    'gif': 'image/gif',
+    'webp': 'image/webp',
+    'svg': 'image/svg+xml',
+    'bmp': 'image/bmp'
+  }
+  return mimeTypes[extension] || 'image/jpeg'
 }
 
 export async function POST(req: NextRequest) {
@@ -77,29 +128,48 @@ export async function POST(req: NextRequest) {
         )
       }
 
-      // Save file locally as backup
+      // Get file buffer
       const bytes = await file.arrayBuffer()
       const buffer = Buffer.from(bytes)
-      const fileName = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}.${file.type.split('/')[1]}`
-      const filePath = join(uploadsDir, fileName)
-      await writeFile(filePath, buffer)
+      const originalName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_')
+      const extension = originalName.split('.').pop() || 'jpg'
+      const fileName = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}.${extension}`
+      
+      console.log(`🔄 Processing file: ${originalName} -> ${fileName}`)
 
-      // Upload to UploadThing and get cloud URL
+      // Upload to UploadThing (primary)
       const uploadthingUrl = await uploadToUploadthing(buffer, fileName);
       
       if (uploadthingUrl) {
-        // Use UploadThing URL directly (trust the response)
+        // Use UploadThing URL (preferred)
         urls.push(uploadthingUrl);
-        console.log(`✅ Successfully uploaded: ${uploadthingUrl}`);
+        console.log(`✅ UploadThing success: ${uploadthingUrl}`);
       } else {
-        // If UploadThing fails, use local URL as fallback
-        const localUrl = `/uploads/${fileName}`;
-        urls.push(localUrl);
-        console.log(`⚠️ Using local fallback: ${localUrl}`);
+        // Fallback: save locally and return local URL
+        console.log(`⚠️ UploadThing failed, using local fallback`);
+        
+        try {
+          const filePath = join(uploadsDir, fileName)
+          await writeFile(filePath, buffer)
+          const localUrl = `/uploads/${fileName}`;
+          urls.push(localUrl);
+          console.log(`📁 Local fallback: ${localUrl}`);
+        } catch (localError) {
+          console.error(`❌ Local save failed:`, localError);
+          return NextResponse.json(
+            { error: `Failed to upload ${originalName}` },
+            { status: 500 }
+          )
+        }
       }
     }
 
-    return NextResponse.json({ urls })
+    console.log(`🎉 Upload complete. URLs:`, urls);
+    return NextResponse.json({ 
+      urls,
+      success: true,
+      count: urls.length
+    })
 
   } catch (error) {
     console.error('Upload error:', error)

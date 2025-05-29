@@ -1,4 +1,4 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, DeviceType } from "@prisma/client";
 import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
@@ -777,7 +777,7 @@ async function main() {
         sessionId: `session_${Date.now()}_${i}_${j}`,
         ipAddress: `192.168.1.${Math.floor(Math.random() * 254) + 1}`,
         userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-        device: "DESKTOP",
+        device: DeviceType.DESKTOP,
         firstVisit: visitTime,
         lastVisit: visitTime,
         createdAt: visitTime
@@ -792,7 +792,13 @@ async function main() {
   console.log("📄 Creating page visits...");
   const visitors = await prisma.visitor.findMany();
   const pages = ['/', '/products', '/categories', '/about', '/contact'];
-  const pageVisitData = [];
+  const pageVisitData: Array<{
+    visitorId: string;
+    url: string;
+    pageTitle: string;
+    duration: number;
+    timestamp: Date;
+  }> = [];
 
   visitors.forEach(visitor => {
     // Each visitor visits 1-3 pages
